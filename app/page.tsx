@@ -29,7 +29,7 @@ const sports = [
 const featuredVenues = [
   {
     id: 1,
-    name: "Elite  Complex",
+    name: "Elite Complex",
     location: "Downtown",
     rating: 4.8,
     price: 25,
@@ -59,40 +59,8 @@ const featuredVenues = [
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-600 via-teal-600 to-blue-700">
-      {/* Hero Navigation Overlay - for home page specific styling */}
-      <nav className="absolute top-0 left-0 right-0 z-50 p-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="hidden md:flex items-center space-x-8 text-white ml-auto">
-            <Link
-              href="/search"
-              className="hover:text-yellow-300 transition-colors"
-            >
-              Find Courts
-            </Link>
-            <Link
-              href="/how-it-works"
-              className="hover:text-yellow-300 transition-colors"
-            >
-              How it Works
-            </Link>
-            <Link
-              href="/about"
-              className="hover:text-yellow-300 transition-colors"
-            >
-              About
-            </Link>
-            <Link
-              href="/contact"
-              className="hover:text-yellow-300 transition-colors"
-            >
-              Contact
-            </Link>
-          </div>
-        </div>
-      </nav>
-
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-16">
         {/* Background Elements */}
         <div className="absolute inset-0">
           <motion.div
@@ -199,11 +167,12 @@ export default function HomePage() {
           >
             <div className="relative">
               <Image
-                src="homeImage.jpg"
+                src="/homeImage.jpg"
                 alt="Sports equipment and courts"
                 width={600}
                 height={600}
-                className="w-full h-auto"
+                className="w-full h-auto rounded-2xl shadow-2xl"
+                priority
               />
               {/* Floating Elements */}
               <motion.div
@@ -259,12 +228,14 @@ export default function HomePage() {
                     className="pl-10 h-12 text-lg"
                   />
                 </div>
-                <Button
-                  size="lg"
-                  className="bg-cyan-600 hover:bg-cyan-700 px-8 h-12"
-                >
-                  Search Courts
-                </Button>
+                <Link href="/search">
+                  <Button
+                    size="lg"
+                    className="bg-cyan-600 hover:bg-cyan-700 px-8 h-12"
+                  >
+                    Search Courts
+                  </Button>
+                </Link>
               </div>
             </div>
           </motion.div>
@@ -344,9 +315,11 @@ export default function HomePage() {
                           <p className="text-sm text-gray-500">per hour</p>
                         </div>
                       </div>
-                      <Button className="w-full bg-cyan-600 hover:bg-cyan-700">
-                        View Courts
-                      </Button>
+                      <Link href="/search">
+                        <Button className="w-full bg-cyan-600 hover:bg-cyan-700">
+                          View Courts
+                        </Button>
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>
@@ -447,7 +420,7 @@ export default function HomePage() {
               Ready to Play? Book Your Spot Now!
             </h2>
             <p className="text-xl text-cyan-100 max-w-2xl mx-auto">
-              Don't wait to secure your venue today at night! It's time to make
+              Don't wait to secure your venue today! It's time to make
               your sports dreams come true. Book now and get the perfect match
               for you.
             </p>
@@ -461,7 +434,7 @@ export default function HomePage() {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link href="/owner/signup">
+              <Link href="/auth/signup">
                 <Button
                   size="lg"
                   variant="outline"
@@ -495,16 +468,16 @@ export default function HomePage() {
                   Find Courts
                 </Link>
                 <Link
-                  href="/how-it-works"
+                  href="/play-together"
                   className="block text-gray-400 hover:text-white"
                 >
-                  How It Works
+                  Play Together
                 </Link>
                 <Link
-                  href="/pricing"
+                  href="/auth/signup"
                   className="block text-gray-400 hover:text-white"
                 >
-                  Pricing
+                  Sign Up
                 </Link>
               </div>
             </div>
@@ -512,22 +485,22 @@ export default function HomePage() {
               <h4 className="text-lg font-semibold">Support</h4>
               <div className="space-y-2">
                 <Link
-                  href="/help"
+                  href="/auth/signin"
                   className="block text-gray-400 hover:text-white"
                 >
-                  Help Center
+                  Sign In
                 </Link>
                 <Link
-                  href="/contact"
+                  href="/auth/signup"
                   className="block text-gray-400 hover:text-white"
                 >
-                  Contact Us
+                  Create Account
                 </Link>
                 <Link
-                  href="/terms"
+                  href="/dashboard"
                   className="block text-gray-400 hover:text-white"
                 >
-                  Terms of Service
+                  Dashboard
                 </Link>
               </div>
             </div>

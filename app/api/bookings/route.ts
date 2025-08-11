@@ -1,8 +1,8 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
-import { auth } from "@/lib/auth"
-import { sendBookingConfirmation } from "@/lib/email"
-import { z } from "zod"
+import { auth } from "@/lib/auth";
+import { sendBookingConfirmation } from "@/lib/email";
+import { prisma } from "@/lib/prisma";
+import { type NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 const createBookingSchema = z.object({
   courtId: z.string(),
@@ -12,24 +12,42 @@ const createBookingSchema = z.object({
   totalAmount: z.number(),
   depositAmount: z.number().optional(),
   notes: z.string().optional(),
-})
+});
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
+    const session = await auth();
 
     if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url)
-    const status = searchParams.get("status")
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get("status");
+    const limit = Number.parseInt(searchParams.get("limit") || "50");
+
+    let whereClause: any = {
+      userId: session.user.id,
+    };
+
+    // Handle special status filters
+    if (status === "upcoming") {
+      whereClause = {
+        ...whereClause,
+        status: "CONFIRMED",
+        date: {
+          gte: new Date(),
+        },
+      };
+    } else if (status && status !== "upcoming") {
+      whereClause = {
+        ...whereClause,
+        status: status.toUpperCase(),
+      };
+    }
 
     const bookings = await prisma.booking.findMany({
-      where: {
-        userId: session.user.id,
-        ...(status && { status: status.toUpperCase() }),
-      },
+      where: whereClause,
       include: {
         court: {
           include: {
@@ -38,27 +56,31 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: {
-        createdAt: "desc",
+        date: status === "upcoming" ? "asc" : "desc",
       },
-    })
+      take: limit,
+    });
 
-    return NextResponse.json(bookings)
+    return NextResponse.json(bookings);
   } catch (error) {
-    console.error("Get bookings error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("Get bookings error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
+    const session = await auth();
 
     if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await request.json()
-    const bookingData = createBookingSchema.parse(body)
+    const body = await request.json();
+    const bookingData = createBookingSchema.parse(body);
 
     // Check for conflicts
     const existingBooking = await prisma.booking.findFirst({
@@ -71,10 +93,13 @@ export async function POST(request: NextRequest) {
           not: "CANCELLED",
         },
       },
-    })
+    });
 
     if (existingBooking) {
-      return NextResponse.json({ error: "Time slot is already booked" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Time slot is already booked" },
+        { status: 400 }
+      );
     }
 
     // Check for blocked slots
@@ -84,10 +109,13 @@ export async function POST(request: NextRequest) {
         date: new Date(bookingData.date),
         startTime: bookingData.startTime,
       },
-    })
+    });
 
     if (blockedSlot) {
-      return NextResponse.json({ error: "Time slot is not available" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Time slot is not available" },
+        { status: 400 }
+      );
     }
 
     // Create booking
@@ -107,22 +135,28 @@ export async function POST(request: NextRequest) {
         },
         user: true,
       },
-    })
+    });
 
     // Send confirmation email
-    await sendBookingConfirmation(session.user.email!, booking)
+    await sendBookingConfirmation(session.user.email!, booking);
 
     // TODO: Emit socket event for real-time updates
     // io.to(`owner-${booking.court.venue.ownerId}`).emit('booking:new', booking)
 
-    return NextResponse.json(booking)
+    return NextResponse.json(booking);
   } catch (error) {
-    console.error("Create booking error:", error)
+    console.error("Create booking error:", error);
 
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: "Invalid input data" }, { status: 400 })
+      return NextResponse.json(
+        { error: "Invalid input data" },
+        { status: 400 }
+      );
     }
 
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

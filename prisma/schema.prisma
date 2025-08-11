@@ -53,6 +53,7 @@ model User {
   venues   Venue[]
   bookings Booking[]
   otpCodes OtpCode[]
+  invites  Invite[]
 }
 
 model OtpCode {
@@ -95,33 +96,33 @@ model Venue {
 }
 
 model Court {
-  id              String   @id @default(cuid())
-  name            String
-  sport           Sport
-  pricePerHour    Float
-  slotDuration    Int      @default(60) // in minutes
-  operatingHours  String // JSON object with daily hours
-  description     String?
-  images          String? // JSON array of image URLs
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id             String   @id @default(cuid())
+  name           String
+  sport          Sport
+  pricePerHour   Float
+  slotDuration   Int      @default(60) // in minutes
+  operatingHours String // JSON object with daily hours
+  description    String?
+  images         String? // JSON array of image URLs
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   venue   Venue  @relation(fields: [venueId], references: [id])
   venueId String
 
-  bookings      Booking[]
-  blockedSlots  BlockedSlot[]
-  availability  Availability[]
+  bookings     Booking[]
+  blockedSlots BlockedSlot[]
+  availability Availability[]
 }
 
 model Availability {
-  id        String    @id @default(cuid())
+  id        String   @id @default(cuid())
   dayOfWeek Int // 0-6 (Sunday-Saturday)
   startTime String // HH:MM format
   endTime   String // HH:MM format
-  isActive  Boolean   @default(true)
-  createdAt DateTime  @default(now())
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
 
   court   Court  @relation(fields: [courtId], references: [id])
   courtId String
@@ -198,4 +199,48 @@ enum PaymentStatus {
   PAID
   FAILED
   REFUNDED
+}
+
+model Invite {
+  id              String       @id @default(cuid())
+  name            String
+  venue           String
+  date            DateTime
+  time            String // HH:MM format
+  sport           Sport
+  playersRequired Int
+  playersJoined   Int          @default(0)
+  contactDetails  String
+  status          InviteStatus @default(ACTIVE)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  creator   User          @relation(fields: [creatorId], references: [id])
+  creatorId String
+  requests  JoinRequest[]
+}
+
+model JoinRequest {
+  id             String        @id @default(cuid())
+  joinerName     String
+  contactDetails String
+  playersCount   Int
+  status         RequestStatus @default(PENDING)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  invite   Invite @relation(fields: [inviteId], references: [id], onDelete: Cascade)
+  inviteId String
+}
+
+enum InviteStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum RequestStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
 }
