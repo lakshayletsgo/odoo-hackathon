@@ -28,6 +28,7 @@ interface Venue {
   capacity: number;
   pricePerHour: number;
   sport: string;
+  sports?: string[];
   amenities: string[];
   rating?: number;
   reviewCount?: number;
@@ -50,7 +51,15 @@ export default function VenuesPage() {
       const response = await fetch("/api/venues");
       if (response.ok) {
         const data = await response.json();
-        setVenues(data);
+        // Transform data to match our interface
+        const transformedVenues = data.map((venue: any) => ({
+          ...venue,
+          sports: venue.sports || [], // Use sports from API or empty array
+          isAvailable: venue.isActive && venue.owner?.isVerified,
+          imageUrl:
+            venue.images && venue.images.length > 0 ? venue.images[0] : null,
+        }));
+        setVenues(transformedVenues);
       }
     } catch (error) {
       console.error("Error fetching venues:", error);
@@ -197,7 +206,7 @@ export default function VenuesPage() {
                     {venue.rating && (
                       <div className="flex items-center text-sm text-gray-600">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mr-1" />
-                        <span>{venue.rating}</span>
+                        <span>{venue.rating.toFixed(1)}</span>
                         {venue.reviewCount && (
                           <span className="ml-1">({venue.reviewCount})</span>
                         )}
@@ -234,6 +243,31 @@ export default function VenuesPage() {
                       <span className="text-gray-600">Sport:</span>
                       <Badge variant="outline">{venue.sport}</Badge>
                     </div>
+
+                    {/* Sports Tags */}
+                    {venue.sports && venue.sports.length > 0 && (
+                      <div>
+                        <p className="text-sm text-gray-600 mb-2">
+                          Sports Available:
+                        </p>
+                        <div className="flex flex-wrap gap-1">
+                          {venue.sports.slice(0, 3).map((sport, idx) => (
+                            <Badge
+                              key={idx}
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              {sport}
+                            </Badge>
+                          ))}
+                          {venue.sports.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{venue.sports.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Amenities */}
                     {venue.amenities.length > 0 && (

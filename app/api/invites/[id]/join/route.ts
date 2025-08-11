@@ -11,7 +11,7 @@ const joinInviteSchema = z.object({
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -31,7 +31,7 @@ export async function POST(
 
     const body = await request.json();
     const validatedData = joinInviteSchema.parse(body);
-    const inviteId = params.id;
+    const { id: inviteId } = await params;
 
     // Find the invite
     const invite = await prisma.invite.findUnique({

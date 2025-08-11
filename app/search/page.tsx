@@ -28,66 +28,23 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const mockVenues = [
-  {
-    id: 1,
-    name: "Elite Sports Complex",
-    address: "123 Sports Ave, Downtown",
-    city: "New York",
-    rating: 4.8,
-    totalRatings: 124,
-    priceRange: [25, 45],
-    image: "/modern-sports-complex.png",
-    sports: ["Tennis", "Basketball", "Badminton"],
-    amenities: ["Parking", "Locker Rooms", "Cafe"],
-    distance: 0.8,
-    courts: 8,
-  },
-  {
-    id: 2,
-    name: "City Recreation Center",
-    address: "456 Recreation Blvd, Midtown",
-    city: "New York",
-    rating: 4.6,
-    totalRatings: 89,
-    priceRange: [20, 35],
-    image: "/recreation-center-courts.png",
-    sports: ["Football", "Volleyball", "Basketball"],
-    amenities: ["Parking", "Showers", "Equipment Rental"],
-    distance: 1.2,
-    courts: 12,
-  },
-  {
-    id: 3,
-    name: "Premier Tennis Club",
-    address: "789 Tennis Way, Uptown",
-    city: "New York",
-    rating: 4.9,
-    totalRatings: 156,
-    priceRange: [35, 60],
-    image: "/premium-tennis-courts.png",
-    sports: ["Tennis", "Badminton"],
-    amenities: ["Pro Shop", "Coaching", "Restaurant"],
-    distance: 2.1,
-    courts: 6,
-  },
-  {
-    id: 4,
-    name: "Community Sports Hub",
-    address: "321 Community St, Eastside",
-    city: "New York",
-    rating: 4.4,
-    totalRatings: 67,
-    priceRange: [15, 30],
-    image: "/community-sports-center.png",
-    sports: ["Basketball", "Volleyball", "Badminton"],
-    amenities: ["Parking", "Locker Rooms"],
-    distance: 1.8,
-    courts: 10,
-  },
-];
+interface Venue {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  rating: number;
+  totalRatings: number;
+  priceRange: [number, number];
+  image: string;
+  sports: string[];
+  amenities: string[];
+  distance: number;
+  courts: number;
+}
 const sortOptions = [
   { value: "distance", label: "Distance" },
   { value: "price-low", label: "Price: Low to High" },
@@ -97,6 +54,7 @@ const sortOptions = [
 ];
 
 export default function SearchPage() {
+  const searchParams = useSearchParams();
   const [searchQuery, setSearchQuery] = useState("");
   const [location, setLocation] = useState("");
   const [selectedSport, setSelectedSport] = useState("All Sports");
@@ -104,53 +62,107 @@ export default function SearchPage() {
   const [sortBy, setSortBy] = useState("distance");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [showFilters, setShowFilters] = useState(false);
-  const [venues, setVenues] = useState(mockVenues);
-  const [isLoading, setIsLoading] = useState(false);
+  const [venues, setVenues] = useState<Venue[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Initialize from URL parameters
   useEffect(() => {
-    // Filter and sort venues based on current filters
-    const normalizedSearch = searchQuery.trim().toLowerCase();
-    const normalizedLocation = location.trim().toLowerCase();
+    const urlSearch = searchParams.get("search");
+    const urlLocation = searchParams.get("location");
+    const urlSport = searchParams.get("sport");
 
-    const filteredVenues = mockVenues.filter((venue) => {
-      const matchesSearch =
-        normalizedSearch === "" ||
-        venue.name.toLowerCase().includes(normalizedSearch) ||
-        venue.sports.some((sport) => sport.toLowerCase().includes(normalizedSearch));
+    if (urlSearch) setSearchQuery(urlSearch);
+    if (urlLocation) setLocation(urlLocation);
+    if (urlSport) setSelectedSport(urlSport);
+  }, [searchParams]);
 
-      const matchesLocation =
-        normalizedLocation === "" ||
-        venue.city.toLowerCase().includes(normalizedLocation) ||
-        venue.address.toLowerCase().includes(normalizedLocation);
-      const matchesSport =
-        selectedSport === "All Sports" || venue.sports.includes(selectedSport);
-      const matchesPrice =
-        venue.priceRange[0] >= priceRange[0] &&
-        venue.priceRange[1] <= priceRange[1];
+  // Fetch venues from database
+  useEffect(() => {
+    fetchVenues();
+  }, []);
 
-      return matchesSearch && matchesLocation && matchesSport && matchesPrice;
-    });
+  const fetchVenues = async () => {
+    try {
+      setIsLoading(true);
+      const params = new URLSearchParams();
+      if (selectedSport !== "All Sports") params.set("sport", selectedSport);
+      if (location) params.set("city", location);
+      if (priceRange[0] > 0) params.set("minPrice", priceRange[0].toString());
+      if (priceRange[1] < 100) params.set("maxPrice", priceRange[1].toString());
 
-    // Sort venues
-    filteredVenues.sort((a, b) => {
-      switch (sortBy) {
-        case "distance":
-          return a.distance - b.distance;
-        case "price-low":
-          return a.priceRange[0] - b.priceRange[0];
-        case "price-high":
-          return b.priceRange[1] - a.priceRange[1];
-        case "rating":
-          return b.rating - a.rating;
-        case "popular":
-          return b.totalRatings - a.totalRatings;
-        default:
-          return 0;
+      const response = await fetch(`/api/venues?${params.toString()}`);
+      if (response.ok) {
+        const data = await response.json();
+        // Transform the data to match our interface
+        const transformedVenues = data.map((venue: any) => ({
+          id: venue.id,
+          name: venue.name,
+          address: venue.address,
+          city: venue.city,
+          rating: venue.rating || 4.5,
+          totalRatings:
+            venue.reviewCount || Math.floor(Math.random() * 100) + 20,
+          priceRange: [
+            venue.pricePerHour || 25,
+            (venue.pricePerHour || 25) + 20,
+          ] as [number, number],
+          image: venue.images?.[0] || "/placeholder.svg",
+          sports: venue.courts?.map((court: any) => court.sport) || [
+            venue.sport || "Basketball",
+          ],
+          amenities: venue.amenities || ["Parking", "Locker Rooms"],
+          distance: Math.random() * 3 + 0.5, // Mock distance for now
+          courts: venue.courts?.length || 1,
+        }));
+        setVenues(transformedVenues);
       }
-    });
+    } catch (error) {
+      console.error("Error fetching venues:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    setVenues(filteredVenues);
-  }, [searchQuery, location, selectedSport, priceRange, sortBy]);
+  // Filter venues based on search criteria
+  useEffect(() => {
+    fetchVenues();
+  }, [selectedSport, location, priceRange]);
+
+  const filteredVenues = venues.filter((venue: Venue) => {
+    const normalizedSearch = searchQuery.trim().toLowerCase();
+
+    const matchesSearch =
+      normalizedSearch === "" ||
+      venue.name.toLowerCase().includes(normalizedSearch) ||
+      venue.sports.some((sport: string) =>
+        sport.toLowerCase().includes(normalizedSearch)
+      );
+
+    const matchesLocation =
+      location.trim() === "" ||
+      venue.city.toLowerCase().includes(location.trim().toLowerCase()) ||
+      venue.address.toLowerCase().includes(location.trim().toLowerCase());
+
+    return matchesSearch && matchesLocation;
+  });
+
+  // Sort venues
+  const sortedVenues = [...filteredVenues].sort((a: Venue, b: Venue) => {
+    switch (sortBy) {
+      case "distance":
+        return a.distance - b.distance;
+      case "price-low":
+        return a.priceRange[0] - b.priceRange[0];
+      case "price-high":
+        return b.priceRange[1] - a.priceRange[1];
+      case "rating":
+        return b.rating - a.rating;
+      case "popular":
+        return b.totalRatings - a.totalRatings;
+      default:
+        return 0;
+    }
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">

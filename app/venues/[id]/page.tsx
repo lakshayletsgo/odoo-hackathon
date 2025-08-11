@@ -17,6 +17,9 @@ async function getVenue(id: string) {
   const venue = await prisma.venue.findUnique({
     where: { id },
     include: {
+      owner: {
+        select: { id: true, name: true, email: true, isVerified: true },
+      },
       courts: {
         where: { isActive: true },
         include: { availability: true },
@@ -24,7 +27,7 @@ async function getVenue(id: string) {
     },
   });
 
-  if (venue && venue.isActive && venue.isApproved) {
+  if (venue && venue.isActive && venue.owner.isVerified) {
     let images: string[] = [];
     let amenities: string[] = [];
     try {
@@ -39,53 +42,17 @@ async function getVenue(id: string) {
     return { ...venue, images, amenities };
   }
 
-  // Fallback demo data when visiting numeric ids like /venues/1
-  if (/^\d+$/.test(id)) {
-    const sampleImageById: Record<string, string> = {
-      "1": "/modern-sports-complex.png",
-      "2": "/recreation-center-courts.png",
-      "3": "/premium-tennis-courts.png",
-      "4": "/community-sports-center.png",
-    };
-
-    return {
-      id,
-      name: `Sample Venue ${id}`,
-      description: "Demo venue for preview.",
-      address: "123 Demo Street",
-      city: "New York",
-      state: "NY",
-      zipCode: "10001",
-      images: [sampleImageById[id] || "/placeholder.jpg"],
-      amenities: ["Parking", "Seating", "Restrooms", "CCTV"],
-      rating: 4.6,
-      totalRating: 128,
-      isActive: true,
-      isApproved: true,
-      courts: [
-        {
-          id: `mock-${id}-1`,
-          name: "Court A",
-          sport: "TENNIS",
-          pricePerHour: 30,
-          slotDuration: 60,
-          isActive: true,
-          availability: Array.from({ length: 7 }).map((_, day) => ({
-            dayOfWeek: day,
-            startTime: "06:00",
-            endTime: "22:00",
-            isActive: true,
-          })),
-        },
-      ],
-    } as any;
-  }
-
   return null;
 }
 
-export default async function VenuePage({ params }: { params: { id: string } }) {
-  const venue = await getVenue(params.id);
+// Fix the async params issue
+export default async function VenuePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const venue = await getVenue(id);
   if (!venue) return notFound();
 
   const primaryImage = venue.images[0] || "/placeholder.jpg";
@@ -216,8 +183,24 @@ export default async function VenuePage({ params }: { params: { id: string } }) 
                   <Clock className="h-4 w-4" />
                   <span className="font-medium">Operating Hours</span>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  See court schedules below
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">
+                      Monday - Friday:
+                    </span>
+                    <span>6:00 AM - 10:00 PM</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Saturday:</span>
+                    <span>8:00 AM - 11:00 PM</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Sunday:</span>
+                    <span>8:00 AM - 9:00 PM</span>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  * Hours may vary by court. Check individual court schedules.
                 </p>
               </CardContent>
             </Card>

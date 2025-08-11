@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { type NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 const createVenueSchema = z.object({
@@ -26,39 +26,54 @@ export async function GET(request: NextRequest) {
 
     const venues = await prisma.venue.findMany({
       where: {
-        isApproved: true,
-        isActive: true,
-        ...(sport && sport !== "all" && { sport }),
-        ...(city && {
-          city: {
-            contains: city,
-            mode: "insensitive",
+        ...(sport &&
+          sport !== "all" && {
+            courts: {
+              some: {
+                sport: sport,
+              },
+            },
+          }),
+        ...(city && { city: { contains: city, mode: "insensitive" } }),
+      },
+      include: {
+        courts: true,
+        owner: {
+          select: {
+            name: true,
+            isVerified: true,
           },
-        }),
-        ...(minPrice && {
-          pricePerHour: {
-            gte: Number.parseFloat(minPrice),
-          },
-        }),
-        ...(maxPrice && {
-          pricePerHour: {
-            lte: Number.parseFloat(maxPrice),
-          },
-        }),
+        },
       },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    // Transform the data to include amenities as an array
+    // Transform the data to include amenities as an array and calculate pricing
     const transformedVenues = venues.map((venue) => ({
       ...venue,
       amenities: venue.amenities
-        ? venue.amenities.split(",").map((a) => a.trim())
+        ? venue.amenities
+            .split(",")
+            .map((a) => a.trim())
+            .filter(Boolean)
         : [],
-      reviewCount: Math.floor(Math.random() * 50) + 5, // Mock review count for demo
-      rating: Math.random() * 2 + 3, // Mock rating between 3-5 for demo
+      images: venue.images
+        ? venue.images
+            .split(",")
+            .map((img) => img.trim())
+            .filter(Boolean)
+        : [],
+      reviewCount: Math.floor(Math.random() * 50) + 5,
+      rating: parseFloat((Math.random() * 2 + 3).toFixed(1)),
+      pricePerHour:
+        venue.courts.length > 0
+          ? Math.min(...venue.courts.map((c) => c.pricePerHour))
+          : 0,
+      sport: venue.courts.length > 0 ? venue.courts[0].sport : "Various",
+      capacity: venue.courts.length > 0 ? venue.courts.length * 4 : 0,
+      isAvailable: venue.courts.some((c) => c.isActive),
     }));
 
     return NextResponse.json(transformedVenues);
@@ -74,41 +89,56 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-
-    if (
-      !session ||
-      session.user.role !== "OWNER" ||
-      (session.user as any)?.isBanned
-    ) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
-    const venueData = createVenueSchema.parse(body);
 
+    // Check if user is verified owner
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+    });
+
+    if (!user || user.role !== "OWNER" || !user.isVerified) {
+      return NextResponse.json(
+        { error: "Only verified owners can create venues" },
+        { status: 403 }
+      );
+    }
+
+    const { courts, amenities, images, ...venueData } = body;
+
+    // Create venue with courts
     const venue = await prisma.venue.create({
       data: {
         ...venueData,
-        images: JSON.stringify(venueData.images || []),
-        amenities: JSON.stringify(venueData.amenities || []),
+        amenities: amenities?.join(", ") || "",
+        images: images?.join(", ") || "",
         ownerId: session.user.id,
-        isApproved: false, // Requires admin approval
+        courts: {
+          create:
+            courts?.map((court: any) => ({
+              name: court.name,
+              sport: court.sport,
+              description: court.description || "",
+              pricePerHour: court.pricePerHour,
+              slotDuration: 60, // Default 1 hour slots
+              operatingHours: "9:00-22:00", // Default operating hours
+              isActive: true,
+            })) || [],
+        },
+      },
+      include: {
+        courts: true,
       },
     });
 
     return NextResponse.json(venue);
   } catch (error) {
-    console.error("Create venue error:", error);
-
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Invalid input data" },
-        { status: 400 }
-      );
-    }
-
+    console.error("Error creating venue:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to create venue" },
       { status: 500 }
     );
   }

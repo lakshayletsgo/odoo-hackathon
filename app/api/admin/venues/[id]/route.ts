@@ -12,7 +12,7 @@ const venueActionSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -23,9 +23,10 @@ export async function PUT(
 
     const body = await request.json();
     const { action, comments } = venueActionSchema.parse(body);
+    const { id } = await params;
 
     const venue = await prisma.venue.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         isApproved: action === "approve",
         isActive: action === "approve",

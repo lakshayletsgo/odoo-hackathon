@@ -118,6 +118,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate that the court exists
+    const court = await prisma.court.findUnique({
+      where: { id: bookingData.courtId },
+      include: {
+        venue: {
+          include: {
+            owner: true,
+          },
+        },
+      },
+    });
+
+    if (!court) {
+      return NextResponse.json({ error: "Court not found" }, { status: 404 });
+    }
+
+    if (!court.isActive || !court.venue.isActive) {
+      return NextResponse.json(
+        { error: "Court or venue is not available" },
+        { status: 400 }
+      );
+    }
+
+    // Check if venue owner is verified instead of venue approval
+    if (!court.venue.owner.isVerified) {
+      return NextResponse.json(
+        { error: "Venue owner is not verified" },
+        { status: 400 }
+      );
+    }
+
     // Create booking
     const booking = await prisma.booking.create({
       data: {

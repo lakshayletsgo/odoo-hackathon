@@ -1,15 +1,18 @@
-import { prisma } from "@/lib/prisma"
-import { NextResponse, type NextRequest } from "next/server"
+import { prisma } from "@/lib/prisma";
+import { NextResponse, type NextRequest } from "next/server";
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const venue = await prisma.venue.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
-        owner: { select: { id: true, name: true, email: true } },
+        owner: {
+          select: { id: true, name: true, email: true, isVerified: true },
+        },
         courts: {
           where: { isActive: true },
           include: {
@@ -17,33 +20,34 @@ export async function GET(
           },
         },
       },
-    })
+    });
 
-    if (!venue || !venue.isActive || !venue.isApproved) {
-      return NextResponse.json({ error: "Venue not found" }, { status: 404 })
+    if (!venue || !venue.isActive || !venue.owner.isVerified) {
+      return NextResponse.json({ error: "Venue not found" }, { status: 404 });
     }
 
     const images: string[] = (() => {
       try {
-        return venue.images ? (JSON.parse(venue.images) as string[]) : []
+        return venue.images ? (JSON.parse(venue.images) as string[]) : [];
       } catch {
-        return []
+        return [];
       }
-    })()
+    })();
 
     const amenities: string[] = (() => {
       try {
-        return venue.amenities ? (JSON.parse(venue.amenities) as string[]) : []
+        return venue.amenities ? (JSON.parse(venue.amenities) as string[]) : [];
       } catch {
-        return []
+        return [];
       }
-    })()
+    })();
 
-    return NextResponse.json({ ...venue, images, amenities })
+    return NextResponse.json({ ...venue, images, amenities });
   } catch (error) {
-    console.error("Get venue by id error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    console.error("Get venue by id error:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
-
-

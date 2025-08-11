@@ -55,6 +55,25 @@ interface Booking {
   createdAt: string;
 }
 
+interface Venue {
+  id: string;
+  name: string;
+  description?: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  images: string[];
+  amenities: string[];
+  isActive: boolean;
+  isApproved: boolean;
+  totalBookings: number;
+  totalRevenue: number;
+  activeCourts: number;
+  _count: { courts: number };
+  createdAt: string;
+}
+
 export default function EnhancedDashboard() {
   const { data: session } = useSession();
   const [stats, setStats] = useState<DashboardStats>({
@@ -68,6 +87,7 @@ export default function EnhancedDashboard() {
     completionRate: 0,
   });
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
+  const [venues, setVenues] = useState<Venue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -76,9 +96,10 @@ export default function EnhancedDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const [statsRes, bookingsRes] = await Promise.all([
+      const [statsRes, bookingsRes, venuesRes] = await Promise.all([
         fetch("/api/owner/stats"),
         fetch("/api/owner/bookings?limit=10"),
+        fetch("/api/owner/venues"),
       ]);
 
       if (statsRes.ok) {
@@ -89,6 +110,11 @@ export default function EnhancedDashboard() {
       if (bookingsRes.ok) {
         const bookingsData = await bookingsRes.json();
         setRecentBookings(bookingsData);
+      }
+
+      if (venuesRes.ok) {
+        const venuesData = await venuesRes.json();
+        setVenues(venuesData);
       }
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
@@ -421,16 +447,64 @@ export default function EnhancedDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-12">
-                  <MapPin className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No venues yet</h3>
-                  <p className="text-muted-foreground mb-6">
-                    Create your first venue to start accepting bookings
-                  </p>
-                  <Link href="/owner/venues/new">
-                    <Button>Create Your First Venue</Button>
-                  </Link>
-                </div>
+                {venues.length > 0 ? (
+                  <div className="space-y-4">
+                    {venues.map((venue) => (
+                      <motion.div
+                        key={venue.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="flex items-center justify-between p-6 border rounded-lg hover:bg-accent/50 transition-colors"
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/60 rounded-lg flex items-center justify-center">
+                            <MapPin className="h-8 w-8 text-white" />
+                          </div>
+                          <div className="space-y-1">
+                            <div className="flex items-center space-x-2">
+                              <h3 className="font-semibold text-lg">{venue.name}</h3>
+                              <Badge variant={venue.isActive ? "default" : "secondary"}>
+                                {venue.isActive ? "Active" : "Inactive"}
+                              </Badge>
+                              {!venue.isApproved && (
+                                <Badge variant="outline">Pending Approval</Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              {venue.address}, {venue.city}, {venue.state}
+                            </p>
+                            <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                              <span>{venue._count.courts} courts</span>
+                              <span>•</span>
+                              <span>{venue.totalBookings} bookings</span>
+                              <span>•</span>
+                              <span>{formatCurrency(venue.totalRevenue)} revenue</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Button variant="outline" size="sm" asChild>
+                            <Link href={`/venues/${venue.id}`}>View</Link>
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            Edit
+                          </Button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <MapPin className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No venues yet</h3>
+                    <p className="text-muted-foreground mb-6">
+                      Create your first venue to start accepting bookings
+                    </p>
+                    <Link href="/owner/venues/new">
+                      <Button>Create Your First Venue</Button>
+                    </Link>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
