@@ -185,7 +185,7 @@ export default function HomePage() {
           >
             <div className="relative">
               <Image
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/original-a0bb22b22b063f4d479089ce06b49009-zCjXRhD5WILxxIFgHWZzgH0FgOi2q8.webp"
+                src="homeImage.jpg"
                 alt="Sports equipment and courts"
                 width={600}
                 height={600}
