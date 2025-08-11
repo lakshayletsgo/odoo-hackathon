@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -13,12 +13,12 @@ model Account {
   type              String
   provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -38,6 +38,7 @@ model User {
   id            String    @id @default(cuid())
   name          String?
   email         String    @unique
+  password      String?
   emailVerified DateTime?
   image         String?
   phone         String?
@@ -71,15 +72,15 @@ model OtpCode {
 model Venue {
   id          String   @id @default(cuid())
   name        String
-  description String?  @db.Text
+  description String?
   address     String
   city        String
   state       String
   zipCode     String
   latitude    Float?
   longitude   Float?
-  images      String?  @db.Text // JSON array of image URLs
-  amenities   String?  @db.Text // JSON array of amenities
+  images      String? // JSON array of image URLs
+  amenities   String? // JSON array of amenities
   rating      Float    @default(0)
   totalRating Int      @default(0)
   isApproved  Boolean  @default(false)
@@ -99,9 +100,9 @@ model Court {
   sport           Sport
   pricePerHour    Float
   slotDuration    Int      @default(60) // in minutes
-  operatingHours  String   @db.Text // JSON object with daily hours
-  description     String?  @db.Text
-  images          String?  @db.Text // JSON array of image URLs
+  operatingHours  String // JSON object with daily hours
+  description     String?
+  images          String? // JSON array of image URLs
   isActive        Boolean  @default(true)
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -150,7 +151,7 @@ model Booking {
   status        BookingStatus @default(PENDING)
   paymentStatus PaymentStatus @default(PENDING)
   paymentId     String?
-  notes         String?       @db.Text
+  notes         String?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
