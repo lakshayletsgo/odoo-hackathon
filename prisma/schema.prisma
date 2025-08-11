@@ -98,6 +98,7 @@ model Venue {
   ownerId String
 
   courts Court[]
+  reviews Review[]
 }
 
 model Court {
@@ -167,6 +168,22 @@ model Booking {
   courtId String
 
   @@unique([courtId, date, startTime, endTime])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  venueId   String
+  userId    String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  venue Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([venueId])
+  @@index([userId])
 }
 
 model Invite {
