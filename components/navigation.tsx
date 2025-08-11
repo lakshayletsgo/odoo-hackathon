@@ -18,16 +18,7 @@ import {
   NavigationMenuList,
 } from "@/components/ui/navigation-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import {
-  Building2,
-  LogOut,
-  Menu,
-  Monitor,
-  Moon,
-  Settings,
-  Sun,
-  User,
-} from "lucide-react";
+import { LogOut, Menu, Monitor, Moon, Settings, Sun, User } from "lucide-react";
 import { signOut, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -147,10 +138,16 @@ export function Navigation() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-                <Building2 className="h-5 w-5 text-white" />
-              </div>
-              <span className="text-xl font-bold ">QuickCourt</span>
+              <img
+                src="/trans_bg.png"
+                alt="QuickCourt Logo"
+                className="h-8 w-8 object-contain"
+              />
+              <img
+                src="/trans_bg-2.png"
+                alt="QuickCourt Text"
+                className="h-6 w-auto object-contain"
+              />
             </Link>
           </div>
 

@@ -36,6 +36,7 @@
   "main": "index.js",
   "postinstall": "prisma generate",
   "dependencies": {
+    "@google/generative-ai": "^0.19.0",
     "@auth/core": "^0.40.0",
     "@auth/prisma-adapter": "^2.10.0",
     "@emotion/is-prop-valid": "^1.2.2",

@@ -29,8 +29,12 @@ import {
   XCircle,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
+
+import AdminDashboard from "./admin-dashboard";
+import OwnerDashboard from "./owner-dashboard";
+import UserDashboard from "./user-dashboard";
 
 interface DashboardStats {
   totalBookings: number;
@@ -75,7 +79,7 @@ interface Venue {
 }
 
 export default function EnhancedDashboard() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [stats, setStats] = useState<DashboardStats>({
     totalBookings: 0,
     totalRevenue: 0,
@@ -162,6 +166,34 @@ export default function EnhancedDashboard() {
       .join("")
       .toUpperCase();
   };
+
+  if (status === "loading") {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    redirect("/auth/signin");
+  }
+
+  const userRole = (session.user as any)?.role || "USER";
+
+  // Render appropriate dashboard based on user role
+  switch (userRole) {
+    case "ADMIN":
+      return <AdminDashboard />;
+    case "OWNER":
+      return <OwnerDashboard />;
+    case "USER":
+    default:
+      return <UserDashboard />;
+  }
 
   if (isLoading) {
     return (

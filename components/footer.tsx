@@ -1,21 +1,13 @@
 "use client";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import {
-  Building2,
-  Facebook,
-  Instagram,
-  Mail,
-  Twitter,
-  Youtube,
-} from "lucide-react";
+import { Mail } from "lucide-react";
 import Link from "next/link";
 
 const sports = [
   "Tennis",
-  "Basketball", 
+  "Basketball",
   "Football",
   "Soccer",
   "Badminton",
@@ -63,16 +55,20 @@ export function Footer() {
           {/* Brand Section */}
           <div className="lg:col-span-2 space-y-6">
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-                <Building2 className="h-6 w-6 text-white" />
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                QuickCourt
-              </span>
+              <img
+                src="/trans_bg.png"
+                alt="QuickCourt Logo"
+                className="h-8 w-8 object-contain"
+              />
+              <img
+                src="/trans_bg-2.png"
+                alt="QuickCourt Text"
+                className="h-6 w-auto object-contain"
+              />
             </div>
-            
+
             <p className="text-slate-300 text-lg leading-relaxed">
-              Your ultimate destination for booking sports courts instantly. 
+              Your ultimate destination for booking sports courts instantly.
               Connect with players, discover venues, and never miss a game.
             </p>
 
@@ -83,9 +79,6 @@ export function Footer() {
                 <span>support@quickcourt.com</span>
               </div>
             </div>
-
-
-    
           </div>
 
           {/* Quick Links */}
@@ -94,7 +87,7 @@ export function Footer() {
             <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.name}>
-                  <Link 
+                  <Link
                     href={link.href}
                     className="text-slate-300 hover:text-primary transition-colors duration-200"
                   >
@@ -111,7 +104,7 @@ export function Footer() {
             <ul className="space-y-3">
               {company.map((link) => (
                 <li key={link.name}>
-                  <Link 
+                  <Link
                     href={link.href}
                     className="text-slate-300 hover:text-primary transition-colors duration-200"
                   >
@@ -128,7 +121,7 @@ export function Footer() {
             <ul className="space-y-3">
               {support.map((link) => (
                 <li key={link.name}>
-                  <Link 
+                  <Link
                     href={link.href}
                     className="text-slate-300 hover:text-primary transition-colors duration-200"
                   >
@@ -142,12 +135,14 @@ export function Footer() {
 
         {/* Sports Section */}
         <div className="mt-12 pt-8 border-t border-slate-800">
-          <h3 className="text-lg font-semibold text-white mb-6">Popular Sports</h3>
+          <h3 className="text-lg font-semibold text-white mb-6">
+            Popular Sports
+          </h3>
           <div className="flex flex-wrap gap-3">
             {sports.map((sport) => (
               <Link key={sport} href={`/search?sport=${sport.toLowerCase()}`}>
-                <Badge 
-                  variant="secondary" 
+                <Badge
+                  variant="secondary"
                   className="bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors cursor-pointer px-3 py-1"
                 >
                   {sport}
@@ -156,8 +151,6 @@ export function Footer() {
             ))}
           </div>
         </div>
-
-
       </div>
 
       {/* Bottom Footer */}
@@ -167,18 +160,21 @@ export function Footer() {
             <div className="text-slate-400 text-sm">
               © 2024 QuickCourt. All rights reserved.
             </div>
-            
+
             <div className="flex flex-wrap gap-6 text-sm">
               {legal.map((link, index) => (
                 <span key={link.name} className="flex items-center">
-                  <Link 
+                  <Link
                     href={link.href}
                     className="text-slate-400 hover:text-primary transition-colors duration-200"
                   >
                     {link.name}
                   </Link>
                   {index < legal.length - 1 && (
-                    <Separator orientation="vertical" className="h-4 bg-slate-700 ml-6" />
+                    <Separator
+                      orientation="vertical"
+                      className="h-4 bg-slate-700 ml-6"
+                    />
                   )}
                 </span>
               ))}

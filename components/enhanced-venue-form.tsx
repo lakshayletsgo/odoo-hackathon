@@ -89,7 +89,10 @@ interface EnhancedVenueFormProps {
   isEdit?: boolean;
 }
 
-export default function EnhancedVenueForm({ venueId, isEdit = false }: EnhancedVenueFormProps) {
+export default function EnhancedVenueForm({
+  venueId,
+  isEdit = false,
+}: EnhancedVenueFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(isEdit);
@@ -132,7 +135,7 @@ export default function EnhancedVenueForm({ venueId, isEdit = false }: EnhancedV
       const response = await fetch(`/api/venues/${venueId}`);
       if (response.ok) {
         const venue = await response.json();
-        
+
         // Set form values
         form.reset({
           name: venue.name,
@@ -202,7 +205,7 @@ export default function EnhancedVenueForm({ venueId, isEdit = false }: EnhancedV
     try {
       const url = isEdit ? `/api/venues/${venueId}` : "/api/venues";
       const method = isEdit ? "PUT" : "POST";
-      
+
       const response = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -213,11 +216,16 @@ export default function EnhancedVenueForm({ venueId, isEdit = false }: EnhancedV
       });
 
       if (response.ok) {
-        toast.success(isEdit ? "Venue updated successfully!" : "Venue created successfully!");
+        toast.success(
+          isEdit ? "Venue updated successfully!" : "Venue created successfully!"
+        );
         router.push("/owner/dashboard");
       } else {
         const error = await response.text();
-        toast.error(error || (isEdit ? "Failed to update venue" : "Failed to create venue"));
+        toast.error(
+          error ||
+            (isEdit ? "Failed to update venue" : "Failed to create venue")
+        );
       }
     } catch (error) {
       console.error("Submit error:", error);
@@ -245,7 +253,9 @@ export default function EnhancedVenueForm({ venueId, isEdit = false }: EnhancedV
           {isEdit ? "Edit Venue" : "Create New Venue"}
         </h1>
         <p className="text-gray-600">
-          {isEdit ? "Update your venue information" : "Add your sports facility to our platform"}
+          {isEdit
+            ? "Update your venue information"
+            : "Add your sports facility to our platform"}
         </p>
       </div>
 
@@ -367,24 +377,24 @@ export default function EnhancedVenueForm({ venueId, isEdit = false }: EnhancedV
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <Upload className="mx-auto h-12 w-12 text-gray-400" />
-                  <div className="mt-4">
-                    <label htmlFor="images" className="cursor-pointer">
-                      <span className="mt-2 block text-sm font-medium text-gray-900">
+                <label htmlFor="images" className="cursor-pointer block">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                    <Upload className="mx-auto h-12 w-12 text-gray-400" />
+                    <div className="mt-4">
+                      <span className="mt-2 block text-sm font-medium text-foreground">
                         Click to upload images
                       </span>
-                      <input
-                        id="images"
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(e) => handleImageUpload(e.target.files)}
-                      />
-                    </label>
+                    </div>
                   </div>
-                </div>
+                  <input
+                    id="images"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleImageUpload(e.target.files)}
+                  />
+                </label>
 
                 {uploadedImages.length > 0 && (
                   <div className="grid grid-cols-3 gap-4">
@@ -633,10 +643,13 @@ export default function EnhancedVenueForm({ venueId, isEdit = false }: EnhancedV
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting || isLoading}>
-              {isSubmitting 
-                ? (isEdit ? "Updating..." : "Creating...") 
-                : (isEdit ? "Update Venue" : "Create Venue")
-              }
+              {isSubmitting
+                ? isEdit
+                  ? "Updating..."
+                  : "Creating..."
+                : isEdit
+                ? "Update Venue"
+                : "Create Venue"}
             </Button>
           </div>
         </form>

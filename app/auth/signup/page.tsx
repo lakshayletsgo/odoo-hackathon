@@ -195,9 +195,9 @@ export default function SignUpPage() {
                   <SelectContent>
                     <SelectItem value="USER">Player - Book courts</SelectItem>
                     <SelectItem value="OWNER">Owner - List venues</SelectItem>
-                    <SelectItem value="ADMIN">
+                    {/* <SelectItem value="ADMIN">
                       Admin - Manage platform
-                    </SelectItem>
+                    </SelectItem> */}
                   </SelectContent>
                 </Select>
                 {errors.role && (

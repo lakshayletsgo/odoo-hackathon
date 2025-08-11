@@ -148,3 +148,76 @@ export async function sendBookingConfirmation(email: string, booking: any) {
 
   return { success: false, error: "No email service configured" };
 }
+
+export async function sendBookingStatusUpdate(email: string, booking: any) {
+  const statusText = booking.status === "CONFIRMED" ? "confirmed" : "cancelled";
+  const statusColor = booking.status === "CONFIRMED" ? "#10b981" : "#ef4444";
+
+  const html = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #0891b2;">QuickCourt</h2>
+      <h3>Booking ${
+        statusText.charAt(0).toUpperCase() + statusText.slice(1)
+      }</h3>
+      <p>Your booking has been <strong style="color: ${statusColor};">${statusText}</strong>!</p>
+      <div style="background: #f3f4f6; padding: 20px; margin: 20px 0;">
+        <p><strong>Court:</strong> ${booking.court.name}</p>
+        <p><strong>Venue:</strong> ${booking.court.venue.name}</p>
+        <p><strong>Date:</strong> ${new Date(
+          booking.date
+        ).toLocaleDateString()}</p>
+        <p><strong>Time:</strong> ${booking.startTime} - ${booking.endTime}</p>
+        <p><strong>Total:</strong> ₹${booking.totalAmount}</p>
+        <p><strong>Status:</strong> <span style="color: ${statusColor};">${
+    booking.status
+  }</span></p>
+      </div>
+      ${
+        booking.status === "CONFIRMED"
+          ? "<p>Get ready for your game! See you on the court!</p>"
+          : "<p>We apologize for any inconvenience. You can book another slot anytime.</p>"
+      }
+    </div>
+  `;
+
+  // Try Postmark first
+  if (process.env.POSTMARK_SERVER_TOKEN && process.env.POSTMARK_FROM_EMAIL) {
+    try {
+      await postmarkClient.sendEmail({
+        From: process.env.POSTMARK_FROM_EMAIL,
+        To: email,
+        Subject: `Booking ${
+          statusText.charAt(0).toUpperCase() + statusText.slice(1)
+        } - QuickCourt`,
+        HtmlBody: html,
+        MessageStream: "outbound",
+      });
+      console.log(`✅ Booking status update sent via Postmark to ${email}`);
+      return { success: true, provider: "postmark" };
+    } catch (error) {
+      console.error("❌ Postmark booking status email error:", error);
+    }
+  }
+
+  // Fallback to SendGrid
+  if (process.env.SENDGRID_API_KEY && process.env.SENDGRID_FROM_EMAIL) {
+    const msg = {
+      to: email,
+      from: process.env.SENDGRID_FROM_EMAIL,
+      subject: `Booking ${
+        statusText.charAt(0).toUpperCase() + statusText.slice(1)
+      } - QuickCourt`,
+      html,
+    };
+
+    try {
+      await sgMail.send(msg);
+      console.log(`✅ Booking status update sent via SendGrid to ${email}`);
+      return { success: true, provider: "sendgrid" };
+    } catch (error) {
+      console.error("❌ SendGrid booking status email error:", error);
+    }
+  }
+
+  return { success: false, error: "No email service configured" };
+}

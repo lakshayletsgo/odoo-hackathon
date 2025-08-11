@@ -82,16 +82,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const bookingData = createBookingSchema.parse(body);
 
-    // Check for conflicts
+    // Check for conflicts with confirmed bookings
     const existingBooking = await prisma.booking.findFirst({
       where: {
         courtId: bookingData.courtId,
         date: new Date(bookingData.date),
         startTime: bookingData.startTime,
         endTime: bookingData.endTime,
-        status: {
-          not: "CANCELLED",
-        },
+        status: "CONFIRMED", // Only check confirmed bookings
       },
     });
 

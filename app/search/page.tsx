@@ -18,13 +18,13 @@ import { formatCurrency } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
   Clock,
-  Tag,
   Filter,
   Grid,
   List,
   MapPin,
   Search,
   Star,
+  Tag,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -101,12 +101,13 @@ export default function SearchPage() {
           city: venue.city,
           rating: venue.rating || 0,
           totalRatings: venue.reviewCount || 0,
-          priceRange: venue.pricePerHour ? [
-            venue.pricePerHour,
-            venue.pricePerHour,
-          ] as [number, number] : [0, 0] as [number, number],
+          priceRange: venue.pricePerHour
+            ? ([venue.pricePerHour, venue.pricePerHour] as [number, number])
+            : ([0, 0] as [number, number]),
           image: venue.images?.[0] || "/placeholder.svg",
-          sports: venue.courts?.map((court: any) => court.sport).filter(Boolean) || [],
+          sports:
+            venue.courts?.map((court: any) => court.sport).filter(Boolean) ||
+            [],
           amenities: venue.amenities || [],
           distance: 0, // Distance will be calculated properly when location services are implemented
           courts: venue.courts?.length || 0,
@@ -163,7 +164,6 @@ export default function SearchPage() {
 
   return (
     <div className="min-h-screen bg-background">
-
       {/* Search Bar */}
       <div className="bg-card shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-6">
@@ -264,10 +264,11 @@ export default function SearchPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {sortedVenues.length} {sortedVenues.length === 1 ? 'venue' : 'venues'} found
+            <h1 className="text-2xl font-bold text-white-900">
+              {sortedVenues.length}{" "}
+              {sortedVenues.length === 1 ? "venue" : "venues"} found
             </h1>
-            <p className="text-gray-600">
+            <p className="text-white-600">
               {location && `in ${location}`}{" "}
               {selectedSport !== "All Sports" && `for ${selectedSport}`}
             </p>
@@ -332,7 +333,7 @@ export default function SearchPage() {
                     <div className="space-y-4">
                       <div className="flex items-start justify-between">
                         <div>
-                          <h3 className="text-xl font-semibold text-gray-900">
+                          <h3 className="text-xl font-semibold text-white-900">
                             {venue.name}
                           </h3>
                           <p className="text-gray-600 flex items-center mt-1">
@@ -345,7 +346,9 @@ export default function SearchPage() {
                             {venue.rating && venue.rating > 0 ? (
                               <>
                                 <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                                <span className="font-medium">{venue.rating}</span>
+                                <span className="font-medium">
+                                  {venue.rating}
+                                </span>
                                 <span className="text-gray-500 text-sm">
                                   ({venue.totalRatings})
                                 </span>
@@ -381,7 +384,8 @@ export default function SearchPage() {
                           {venue.courts > 0 && (
                             <span className="flex items-center">
                               <Clock className="h-4 w-4 mr-1" />
-                              {venue.courts} {venue.courts === 1 ? 'court' : 'courts'}
+                              {venue.courts}{" "}
+                              {venue.courts === 1 ? "court" : "courts"}
                             </span>
                           )}
                           {venue.priceRange[0] > 0 && (
@@ -399,7 +403,6 @@ export default function SearchPage() {
                             View Courts
                           </Button>
                         </Link>
-                        
                       </div>
                     </div>
                   </CardContent>

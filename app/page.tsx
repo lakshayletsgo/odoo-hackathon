@@ -4,16 +4,25 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { motion } from "framer-motion";
-import { MapPin, Play, Search, Trophy, Users } from "lucide-react";
+import { MapPin, Search, Trophy, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+// Import Racing Sans One font
+import { Racing_Sans_One } from "next/font/google";
+
+const racingSansOne = Racing_Sans_One({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
+});
+
 const sports = [
   { name: "Tennis", icon: "🎾", color: "bg-green-500" },
   { name: "Basketball", icon: "🏀", color: "bg-orange-500" },
-  { name: "Football", icon: "🏈", color: "bg-brown-500" },
+  { name: "Football", icon: "🏈", color: "bg-amber-600" },
   { name: "Soccer", icon: "⚽", color: "bg-blue-500" },
   { name: "Badminton", icon: "🏸", color: "bg-yellow-500" },
   { name: "Volleyball", icon: "🏐", color: "bg-red-500" },
@@ -41,6 +50,18 @@ export default function HomePage() {
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          <Image
+            src="/homeImage copy.jpg"
+            alt="Sports background"
+            fill
+            className="object-cover brightness-125"
+            priority
+          />
+          <div className="absolute inset-0 bg-black/40"></div>
+        </div>
+
         {/* Background Elements */}
         <div className="absolute inset-0">
           <motion.div
@@ -61,32 +82,37 @@ export default function HomePage() {
           ></motion.div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Content */}
+        <div
+          className="max-w-7xl mx-auto px-6 relative z-10"
+          style={{ marginLeft: 0 }}
+        >
+          {/* Content */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-foreground space-y-8"
+            className="text-white space-y-8 text-left max-w-3xl"
           >
             <div className="space-y-4">
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="text-5xl lg:text-7xl font-bold leading-tight drop-shadow-md"
+                className={`text-6xl lg:text-7xl font-bold leading-tight drop-shadow-md ${racingSansOne.className}`}
               >
-                Book Your
-                <span className="block text-primary drop-shadow-lg">Sports Court</span>
+                <span className="text-orange-500">Book. Play. Connect.</span>
+                <span className="text-5xl block text-white drop-shadow-lg">
+                  All in One Place
+                </span>
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="text-xl lg:text-2xl text-foreground/80 max-w-lg leading-relaxed"
+                className="text-xl lg:text-2xl text-white/90 max-w-lg leading-relaxed"
               >
-                Anytime, anywhere—get ready to play! Book your favorite sports
-                courts instantly and join the game.
+                Discover top sports venues near you, book courts instantly, and
+                join community games with QuickCourt.
               </motion.p>
             </div>
 
@@ -118,7 +144,7 @@ export default function HomePage() {
               <Link href="/search" className="z-10">
                 <Button
                   size="lg"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 text-lg font-semibold"
+                  className="bg-black hover:bg-black/90 text-white px-8 py-4 text-lg font-semibold"
                 >
                   Find Courts
                   <Search className="ml-2 h-5 w-5" />
@@ -128,47 +154,13 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-border text-foreground hover:bg-accent hover:text-accent-foreground px-8 py-4 text-lg bg-transparent"
+                  className="border-white text-white hover:bg-white hover:text-black px-8 py-4 text-lg bg-transparent"
                 >
                   Play Together
                   <Users className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
             </motion.div>
-          </motion.div>
-
-          {/* Right Content - Hero Image */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="relative"
-          >
-            <div className="relative">
-              <Image
-                src="/homeImage.jpg"
-                alt="Sports equipment and courts"
-                width={600}
-                height={600}
-                className="w-full h-auto"
-                priority
-              />
-              {/* Floating Elements */}
-              <motion.div
-                animate={{ y: [0, -10, 0] }}
-                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                className="absolute top-10 right-10 bg-primary p-3 rounded-full shadow-lg"
-              >
-                <Trophy className="h-6 w-6 text-primary-foreground" />
-              </motion.div>
-              <motion.div
-                animate={{ y: [0, 10, 0] }}
-                transition={{ duration: 2.5, repeat: Number.POSITIVE_INFINITY }}
-                className="absolute bottom-20 left-10 bg-secondary p-3 rounded-full shadow-lg"
-              >
-                <Play className="h-6 w-6 text-secondary-foreground" />
-              </motion.div>
-            </div>
           </motion.div>
         </div>
       </section>
@@ -342,7 +334,9 @@ export default function HomePage() {
                 <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-foreground">{feature.title}</h3>
+                <h3 className="text-xl font-semibold mb-2 text-foreground">
+                  {feature.title}
+                </h3>
                 <p className="text-muted-foreground">{feature.description}</p>
               </motion.div>
             ))}
@@ -359,13 +353,19 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="space-y-6"
           >
-            <h2 className="text-4xl font-bold text-primary-foreground drop-shadow-md">Ready to Play?</h2>
+            <h2 className="text-4xl font-bold text-primary-foreground drop-shadow-md">
+              Ready to Play?
+            </h2>
             <p className="text-xl text-primary-foreground/90 leading-relaxed">
               Join thousands of players who book their courts with us
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/search">
-                <Button size="lg" variant="secondary" className="px-8 py-3 bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold shadow-lg">
+                <Button
+                  size="lg"
+                  variant="secondary"
+                  className="px-8 py-3 bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold shadow-lg"
+                >
                   Book a Court
                 </Button>
               </Link>
@@ -373,7 +373,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="px-8 py-3 border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-secondary font-semibold transition-all duration-200"
+                  className="px-8 py-3 border-2 border-white text-white hover:bg-white hover:text-secondary font-semibold transition-all duration-200"
                 >
                   Sign Up Free
                 </Button>

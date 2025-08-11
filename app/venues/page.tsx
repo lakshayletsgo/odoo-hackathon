@@ -200,7 +200,7 @@ export default function VenuesPage() {
 
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
-                    <CardTitle className="text-lg font-bold group-hover:text-blue-600 transition-colors">
+                    <CardTitle className="text-lg font-bold text-foreground group-hover:text-blue-600 transition-colors">
                       {venue.name}
                     </CardTitle>
                     {venue.rating && venue.rating > 0 ? (

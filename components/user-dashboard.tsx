@@ -8,15 +8,20 @@ import { UserProfileCard } from "@/components/ui/user-profile-card";
 import { CalendarDays, Clock, MapPin, Plus, Search, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface Booking {
   id: string;
   date: string;
   startTime: string;
+  endTime: string;
+  totalAmount: number;
   status: "PENDING" | "CONFIRMED" | "CANCELLED";
   court: {
     name: string;
+    venue: {
+      name: string;
+    };
   };
 }
 
@@ -32,8 +37,53 @@ interface Invite {
 
 export default function UserDashboard() {
   const { data: session } = useSession();
-  const [bookings] = useState<Booking[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [invites] = useState<Invite[]>([]);
+  const [loadingBookings, setLoadingBookings] = useState(true);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [session]);
+
+  const fetchBookings = async () => {
+    if (!session?.user) return;
+
+    try {
+      setLoadingBookings(true);
+      const response = await fetch("/api/bookings");
+      if (response.ok) {
+        const data = await response.json();
+        setBookings(data);
+      } else {
+        console.error("Failed to fetch bookings");
+      }
+    } catch (error) {
+      console.error("Error fetching bookings:", error);
+    } finally {
+      setLoadingBookings(false);
+    }
+  };
+
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case "CONFIRMED":
+        return "default" as const;
+      case "PENDING":
+        return "secondary" as const;
+      case "CANCELLED":
+        return "destructive" as const;
+      default:
+        return "secondary" as const;
+    }
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -78,7 +128,11 @@ export default function UserDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {bookings.length === 0 ? (
+              {loadingBookings ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : bookings.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">
                   No bookings yet. Book your first court!
                 </p>
@@ -89,32 +143,48 @@ export default function UserDashboard() {
                       key={booking.id}
                       className="flex items-center justify-between p-3 border rounded-lg"
                     >
-                      <div className="flex items-center gap-3">
-                        <UserAvatar
-                          src={session?.user?.image}
-                          name={session?.user?.name}
-                          size="sm"
-                        />
-                        <div>
-                          <p className="font-medium">{booking.court.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {booking.date} at {booking.startTime}
-                          </p>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <UserAvatar
+                            src={session?.user?.image}
+                            name={session?.user?.name}
+                            size="sm"
+                          />
+                          <div>
+                            <p className="font-medium">{booking.court.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {booking.court.venue.name}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <CalendarDays className="h-3 w-3" />
+                            {formatDate(booking.date)}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {booking.startTime} - {booking.endTime}
+                          </span>
+                          <span className="font-medium text-green-600">
+                            ₹{booking.totalAmount}
+                          </span>
                         </div>
                       </div>
-                      <Badge
-                        variant={
-                          booking.status === "CONFIRMED"
-                            ? "default"
-                            : booking.status === "PENDING"
-                            ? "secondary"
-                            : "destructive"
-                        }
-                      >
+                      <Badge variant={getStatusBadgeVariant(booking.status)}>
                         {booking.status}
                       </Badge>
                     </div>
                   ))}
+                  {bookings.length > 3 && (
+                    <div className="text-center pt-2">
+                      <Link href="/dashboard/bookings">
+                        <Button variant="ghost" size="sm">
+                          View All Bookings
+                        </Button>
+                      </Link>
+                    </div>
+                  )}
                 </div>
               )}
             </CardContent>

@@ -1,350 +1,423 @@
+"use client";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
-import { BookingActions } from "@/components/venue/booking-actions";
-import { prisma } from "@/lib/prisma";
-import { Clock, MapPin, Star } from "lucide-react";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Calendar,
+  Clock,
+  Mail,
+  MapPin,
+  Phone,
+  Star,
+  Users,
+} from "lucide-react";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
-async function getVenue(id: string) {
-  const venue = await prisma.venue.findUnique({
-    where: { id },
-    include: {
-      owner: {
-        select: { id: true, name: true, email: true, isVerified: true },
-      },
-      courts: {
-        where: { isActive: true },
-        include: { availability: true },
-      },
-    },
-  });
-
-  if (venue && venue.isActive && venue.owner.isVerified) {
-    let images: string[] = [];
-    let amenities: string[] = [];
-    
-    console.log("Raw venue.images from DB:", venue.images);
-    console.log("Raw venue.amenities from DB:", venue.amenities);
-    
-    try {
-      if (venue.images) {
-        // Check if it's already a JSON array or a single URL string
-        if (venue.images.startsWith('[')) {
-          // It's a JSON array
-          images = JSON.parse(venue.images) as string[];
-        } else if (venue.images.startsWith('http')) {
-          // It's a single URL string
-          images = [venue.images];
-        } else {
-          // Try to parse as JSON, fallback to treating as single string
-          try {
-            images = JSON.parse(venue.images) as string[];
-          } catch {
-            images = [venue.images];
-          }
-        }
-      } else {
-        images = [];
-      }
-    } catch (error) {
-      console.error("Error parsing images:", error, "Raw value:", venue.images);
-      images = [];
-    }
-    try {
-      if (venue.amenities) {
-        // Check if it's already a JSON array or a comma-separated string
-        if (venue.amenities.startsWith('[')) {
-          // It's a JSON array
-          amenities = JSON.parse(venue.amenities) as string[];
-        } else {
-          // It's likely a comma-separated string
-          amenities = venue.amenities.split(',').map(a => a.trim()).filter(Boolean);
-        }
-      } else {
-        amenities = [];
-      }
-    } catch (error) {
-      console.error("Error parsing amenities:", error, "Raw value:", venue.amenities);
-      amenities = [];
-    }
-
-    console.log("Parsed images:", images);
-    console.log("Parsed amenities:", amenities);
-
-    return { ...venue, images, amenities };
-  }
-
-  return null;
-}
-
-// Fix the async params issue
-export default async function VenuePage({
+export default function VenuePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
-  const venue = await getVenue(id);
-  if (!venue) return notFound();
+  const [venue, setVenue] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [venueImages, setVenueImages] = useState<string[]>([]);
+  const [venueAmenities, setVenueAmenities] = useState<string[]>([]);
+  const [selectedCourt, setSelectedCourt] = useState<any>(null);
+  const [bookingDate, setBookingDate] = useState("");
+  const [bookingTime, setBookingTime] = useState("");
+  const [bookingDuration, setBookingDuration] = useState("1");
+  const [isBooking, setIsBooking] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  console.log("Raw venue.images:", venue.images);
-  console.log("Parsed venue.images:", venue.images);
-  const primaryImage = venue.images && venue.images.length > 0 ? venue.images[0] : "/placeholder.svg";
-  console.log("Primary image:", primaryImage);
+  useEffect(() => {
+    async function fetchVenue() {
+      try {
+        const resolvedParams = await params;
+        const response = await fetch(`/api/venues/${resolvedParams.id}`);
+        if (!response.ok) {
+          throw new Error("Venue not found");
+        }
+        const venueData = await response.json();
+        setVenue(venueData);
 
-  const dayNames = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
+        // Process images
+        let processedImages: string[] = [];
+        if (venueData.images) {
+          if (typeof venueData.images === "string") {
+            try {
+              processedImages = JSON.parse(venueData.images);
+            } catch (e) {
+              processedImages = venueData.images
+                .split(",")
+                .map((img: string) => img.trim())
+                .filter((img: string) => img);
+            }
+          } else if (Array.isArray(venueData.images)) {
+            processedImages = venueData.images;
+          }
+        }
+        setVenueImages(processedImages);
 
-  function HoursPopover({
-    court,
-  }: {
-    court: {
-      name: string;
-      sport: string;
-      pricePerHour: number;
-      availability?: {
-        dayOfWeek: number;
-        startTime: string;
-        endTime: string;
-        isActive: boolean;
-      }[];
-    };
-  }) {
-    const grouped: Record<number, { start: string; end: string }[]> = {};
-    for (const a of court.availability || []) {
-      if (!a.isActive) continue;
-      if (!grouped[a.dayOfWeek]) grouped[a.dayOfWeek] = [];
-      grouped[a.dayOfWeek].push({ start: a.startTime, end: a.endTime });
+        // Process amenities
+        let processedAmenities: string[] = [];
+        if (venueData.amenities) {
+          if (typeof venueData.amenities === "string") {
+            try {
+              processedAmenities = JSON.parse(venueData.amenities);
+            } catch (e) {
+              processedAmenities = venueData.amenities
+                .split(",")
+                .map((a: string) => a.trim())
+                .filter((a: string) => a);
+            }
+          } else if (Array.isArray(venueData.amenities)) {
+            processedAmenities = venueData.amenities;
+          }
+        }
+        setVenueAmenities(processedAmenities);
+      } catch (error) {
+        console.error("Error fetching venue:", error);
+        setVenue(null);
+      } finally {
+        setLoading(false);
+      }
     }
+
+    fetchVenue();
+  }, [params]);
+
+  const handleBooking = async (court: any) => {
+    setSelectedCourt(court);
+    setIsDialogOpen(true);
+  };
+
+  const submitBooking = async () => {
+    if (!selectedCourt || !bookingDate || !bookingTime) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setIsBooking(true);
+    try {
+      // Calculate end time based on start time and duration
+      const startDateTime = new Date(`${bookingDate}T${bookingTime}`);
+      const endDateTime = new Date(
+        startDateTime.getTime() + parseInt(bookingDuration) * 60 * 60 * 1000
+      );
+      const endTime = endDateTime.toTimeString().slice(0, 5); // Format as HH:MM
+
+      const totalAmount =
+        selectedCourt.pricePerHour * parseInt(bookingDuration);
+
+      const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          courtId: selectedCourt.id,
+          date: bookingDate,
+          startTime: bookingTime,
+          endTime: endTime,
+          totalAmount: totalAmount,
+        }),
+      });
+
+      if (response.ok) {
+        toast.success("Booking confirmed!");
+        setIsDialogOpen(false);
+        setBookingDate("");
+        setBookingTime("");
+        setBookingDuration("1");
+      } else {
+        const error = await response.text();
+        toast.error(error || "Booking failed");
+      }
+    } catch (error) {
+      console.error("Booking error:", error);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsBooking(false);
+    }
+  };
+
+  if (loading) {
     return (
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button size="sm" variant="outline">
-            Pricing & Hours
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80">
-          <div className="space-y-3">
-            <div>
-              <h4 className="font-semibold">{court.name}</h4>
-              <p className="text-sm text-muted-foreground">
-                {court.sport} • ₹{court.pricePerHour}/hour
-              </p>
-            </div>
-            <Separator />
-            <div className="space-y-2 max-h-64 overflow-auto pr-1">
-              {dayNames.map((d, idx) => {
-                const slots = grouped[idx] || [];
-                return (
-                  <div
-                    key={idx}
-                    className="flex items-start justify-between text-sm"
-                  >
-                    <span className="text-muted-foreground">{d}</span>
-                    <span className="text-right">
-                      {slots.length === 0
-                        ? "Closed"
-                        : slots.map((s) => `${s.start} - ${s.end}`).join(", ")}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </PopoverContent>
-      </Popover>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading venue details...</p>
+        </div>
+      </div>
     );
+  }
+
+  if (!venue) {
+    notFound();
+    return null;
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold">{venue.name}</h1>
-            <p className="text-muted-foreground flex items-center">
-              <MapPin className="h-4 w-4 mr-1" /> {venue.address}, {venue.city}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1">
-              {venue.rating && venue.rating > 0 ? (
-                <>
-                  <Star className="h-5 w-5 text-yellow-500 fill-current" />
-                  <span className="font-semibold">
-                    {Number(venue.rating).toFixed(1)}
-                  </span>
-                  <span className="text-muted-foreground">
-                    ({venue.totalRating || 0} reviews)
-                  </span>
-                </>
-              ) : (
-                <span className="text-muted-foreground text-sm">
-                  No ratings yet
-                </span>
-              )}
-            </div>
-            <BookingActions
-              venueId={venue.id}
-              courts={venue.courts.map((c: any) => ({
-                id: c.id,
-                name: c.name,
-                pricePerHour: c.pricePerHour,
-              }))}
-            />
-          </div>
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Media */}
-          <Card className="lg:col-span-2">
-            <CardContent className="p-0">
-              <div className="relative aspect-[16/9] w-full overflow-hidden">
+      <div className="max-w-6xl mx-auto p-6">
+        {/* Image Gallery */}
+        <div className="mb-8">
+          {venueImages.length > 0 ? (
+            <div className="space-y-4">
+              {/* Main Image */}
+              <div className="relative h-96 w-full rounded-lg overflow-hidden">
                 <Image
-                  src={primaryImage}
+                  src={venueImages[0]}
                   alt={venue.name}
                   fill
                   className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
               </div>
-            </CardContent>
-          </Card>
 
-          {/* Side info */}
-          <div className="space-y-4">
-            <Card>
-              <CardContent className="p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4" />
-                  <span className="font-medium">Operating Hours</span>
+              {/* Image Gallery - Horizontal Scroll */}
+              {venueImages.length > 1 && (
+                <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                  {venueImages.map((image: string, index: number) => (
+                    <div
+                      key={index}
+                      className="relative flex-shrink-0 h-24 w-32 rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                      onClick={() => {
+                        window.open(image, "_blank");
+                      }}
+                    >
+                      <Image
+                        src={image}
+                        alt={`${venue.name} - Image ${index + 1}`}
+                        fill
+                        className="object-cover"
+                        sizes="128px"
+                      />
+                    </div>
+                  ))}
                 </div>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">
-                      Monday - Friday:
-                    </span>
-                    <span>6:00 AM - 10:00 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Saturday:</span>
-                    <span>8:00 AM - 11:00 PM</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Sunday:</span>
-                    <span>8:00 AM - 9:00 PM</span>
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  * Hours may vary by court. Check individual court schedules.
+              )}
+            </div>
+          ) : (
+            <div className="relative h-96 w-full rounded-lg overflow-hidden bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center">
+              <div className="text-center text-white">
+                <Users className="w-16 h-16 mx-auto mb-4" />
+                <p className="text-xl font-semibold">No images available</p>
+                <p className="text-sm opacity-90">
+                  Venue images will appear here
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+          )}
+        </div>
 
-            <Card>
-              <CardContent className="p-4 space-y-3">
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  <span className="font-medium">Address</span>
-                </div>
-                <p className="text-sm text-muted-foreground">
+        {/* Venue Header */}
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-bold text-foreground mb-2">
+                {venue.name}
+              </h1>
+              <div className="flex items-center text-muted-foreground mb-2">
+                <MapPin className="w-4 h-4 mr-2" />
+                <span>
                   {venue.address}, {venue.city}, {venue.state} {venue.zipCode}
-                </p>
-                {/* Placeholder for map */}
-                <div className="mt-2 h-36 rounded-md bg-muted" />
-              </CardContent>
-            </Card>
+                </span>
+              </div>
+              {venue.description && (
+                <p className="text-muted-foreground">{venue.description}</p>
+              )}
+            </div>
+            <div className="text-right">
+              <div className="flex items-center gap-1 mb-2">
+                <Star className="w-5 h-5 fill-yellow-400 text-yellow-400" />
+                <span className="font-semibold">4.5</span>
+                <span className="text-muted-foreground">(23 reviews)</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Sports / Courts */}
-        <section className="space-y-3">
-          <h2 className="text-xl font-semibold">Courts Available</h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            {venue.courts.map((court: any) => (
-              <Card key={court.id} className="">
-                <CardContent className="p-4 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-semibold">{court.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {court.sport}
-                      </p>
+        {/* Courts and Pricing */}
+        <div className="grid lg:grid-cols-3 gap-8 mb-8">
+          <div className="lg:col-span-2">
+            <h2 className="text-2xl font-bold mb-4">Available Courts</h2>
+            <div className="space-y-4">
+              {venue.courts?.map((court: any) => (
+                <Card key={court.id}>
+                  <CardHeader>
+                    <CardTitle className="flex justify-between items-center">
+                      <span>{court.name}</span>
+                      <Badge>{court.sport}</Badge>
+                    </CardTitle>
+                    {court.description && (
+                      <CardDescription>{court.description}</CardDescription>
+                    )}
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex justify-between items-center">
+                      <div className="space-y-1">
+                        <p className="text-sm text-muted-foreground">
+                          Capacity: {court.capacity} people
+                        </p>
+                        <p className="text-2xl font-bold text-green-600">
+                          ₹{court.pricePerHour}/hour
+                        </p>
+                      </div>
+                      <Button onClick={() => handleBooking(court)}>
+                        <Calendar className="w-4 h-4 mr-2" />
+                        Book Now
+                      </Button>
                     </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-primary">
-                        ₹{court.pricePerHour}
-                      </p>
-                      <p className="text-xs text-muted-foreground">per hour</p>
-                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Contact Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Contact Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {venue.contactPhone && (
+                  <div className="flex items-center">
+                    <Phone className="w-4 h-4 mr-3 text-muted-foreground" />
+                    <span>{venue.contactPhone}</span>
                   </div>
-                  <Separator />
-                  <div className="flex flex-wrap gap-2 items-center justify-between">
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant="secondary">
-                        Slot: {court.slotDuration}m
+                )}
+                {venue.contactEmail && (
+                  <div className="flex items-center">
+                    <Mail className="w-4 h-4 mr-3 text-muted-foreground" />
+                    <span>{venue.contactEmail}</span>
+                  </div>
+                )}
+                {venue.operatingHours && (
+                  <div className="flex items-center">
+                    <Clock className="w-4 h-4 mr-3 text-muted-foreground" />
+                    <span>{venue.operatingHours}</span>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Amenities */}
+            {venueAmenities.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Amenities</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {venueAmenities.map((amenity: string, index: number) => (
+                      <Badge key={index} variant="secondary">
+                        {amenity}
                       </Badge>
-                      <Badge variant="outline">
-                        Active: {court.isActive ? "Yes" : "No"}
-                      </Badge>
-                    </div>
-                    <HoursPopover court={court} />
+                    ))}
                   </div>
                 </CardContent>
               </Card>
-            ))}
+            )}
           </div>
-        </section>
-
-        {/* Amenities */}
-        {venue.amenities.length > 0 && (
-          <section className="space-y-3">
-            <h2 className="text-xl font-semibold">Amenities</h2>
-            <div className="flex flex-wrap gap-2">
-              {venue.amenities.map((a: string) => (
-                <Badge key={a} variant="secondary">
-                  {a}
-                </Badge>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* About */}
-        {venue.description && (
-          <section className="space-y-2">
-            <h2 className="text-xl font-semibold">About Venue</h2>
-            <p className="text-muted-foreground">{venue.description}</p>
-          </section>
-        )}
-
-        {/* Reviews section - will be implemented when review system is ready */}
-        <section className="space-y-4 mt-6">
-          <h2 className="text-xl font-semibold">Player Reviews & Ratings</h2>
-          <div className="text-center py-8 bg-muted/30 rounded-lg">
-            <Star className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-muted-foreground mb-2">No Reviews Yet</h3>
-            <p className="text-sm text-muted-foreground">
-              Be the first to review this venue after your visit!
-            </p>
-          </div>
-        </section>
+        </div>
       </div>
+
+      {/* Booking Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Book {selectedCourt?.name}</DialogTitle>
+            <DialogDescription>
+              Choose your preferred date and time for {selectedCourt?.sport} at{" "}
+              {venue?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="date" className="text-right">
+                Date
+              </Label>
+              <Input
+                id="date"
+                type="date"
+                value={bookingDate}
+                onChange={(e) => setBookingDate(e.target.value)}
+                className="col-span-3"
+                min={new Date().toISOString().split("T")[0]}
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="time" className="text-right">
+                Time
+              </Label>
+              <Input
+                id="time"
+                type="time"
+                value={bookingTime}
+                onChange={(e) => setBookingTime(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="duration" className="text-right">
+                Duration
+              </Label>
+              <select
+                id="duration"
+                value={bookingDuration}
+                onChange={(e) => setBookingDuration(e.target.value)}
+                className="col-span-3 flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="1">1 hour</option>
+                <option value="2">2 hours</option>
+                <option value="3">3 hours</option>
+                <option value="4">4 hours</option>
+              </select>
+            </div>
+            {selectedCourt && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label className="text-right">Total</Label>
+                <div className="col-span-3 font-bold text-green-600">
+                  ₹
+                  {(
+                    selectedCourt.pricePerHour * parseInt(bookingDuration)
+                  ).toFixed(2)}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={submitBooking} disabled={isBooking}>
+              {isBooking ? "Booking..." : "Confirm Booking"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
