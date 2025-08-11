@@ -1,13 +1,22 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Search, MapPin, Star, Clock, Users, Trophy, ArrowRight, Play } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  Clock,
+  MapPin,
+  Play,
+  Search,
+  Star,
+  Trophy,
+  Users,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 const sports = [
   { name: "Football", icon: "⚽", color: "bg-green-500" },
@@ -15,12 +24,12 @@ const sports = [
   { name: "Basketball", icon: "🏀", color: "bg-orange-500" },
   { name: "Tennis", icon: "🎾", color: "bg-green-600" },
   { name: "Volleyball", icon: "🏐", color: "bg-blue-500" },
-]
+];
 
 const featuredVenues = [
   {
     id: 1,
-    name: "Elite Sports Complex",
+    name: "Elite  Complex",
     location: "Downtown",
     rating: 4.8,
     price: 25,
@@ -45,7 +54,7 @@ const featuredVenues = [
     image: "/premium-tennis-courts.png",
     sports: ["Tennis", "Badminton"],
   },
-]
+];
 
 export default function HomePage() {
   return (
@@ -54,16 +63,28 @@ export default function HomePage() {
       <nav className="absolute top-0 left-0 right-0 z-50 p-6">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="hidden md:flex items-center space-x-8 text-white ml-auto">
-            <Link href="/search" className="hover:text-yellow-300 transition-colors">
+            <Link
+              href="/search"
+              className="hover:text-yellow-300 transition-colors"
+            >
               Find Courts
             </Link>
-            <Link href="/how-it-works" className="hover:text-yellow-300 transition-colors">
+            <Link
+              href="/how-it-works"
+              className="hover:text-yellow-300 transition-colors"
+            >
               How it Works
             </Link>
-            <Link href="/about" className="hover:text-yellow-300 transition-colors">
+            <Link
+              href="/about"
+              className="hover:text-yellow-300 transition-colors"
+            >
               About
             </Link>
-            <Link href="/contact" className="hover:text-yellow-300 transition-colors">
+            <Link
+              href="/contact"
+              className="hover:text-yellow-300 transition-colors"
+            >
               Contact
             </Link>
           </div>
@@ -76,7 +97,11 @@ export default function HomePage() {
         <div className="absolute inset-0">
           <motion.div
             animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+            transition={{
+              duration: 20,
+              repeat: Number.POSITIVE_INFINITY,
+              ease: "linear",
+            }}
             className="absolute top-20 right-20 w-32 h-32 opacity-20"
           >
             <div className="w-full h-full rounded-full border-4 border-white"></div>
@@ -113,7 +138,8 @@ export default function HomePage() {
                 transition={{ delay: 0.4 }}
                 className="text-xl lg:text-2xl text-cyan-100 max-w-lg"
               >
-                Anytime, anywhere—get ready to play! Book your favorite sports courts instantly and join the game.
+                Anytime, anywhere—get ready to play! Book your favorite sports
+                courts instantly and join the game.
               </motion.p>
             </div>
 
@@ -143,7 +169,10 @@ export default function HomePage() {
               className="flex flex-col sm:flex-row gap-4"
             >
               <Link href="/search">
-                <Button size="lg" className="bg-yellow-400 text-black hover:bg-yellow-500 px-8 py-4 text-lg">
+                <Button
+                  size="lg"
+                  className="bg-yellow-400 text-black hover:bg-yellow-500 px-8 py-4 text-lg"
+                >
                   Book a Court
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
@@ -203,10 +232,12 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="text-center space-y-8"
           >
-            <h2 className="text-4xl font-bold text-gray-900">Find Your Game Anytime</h2>
+            <h2 className="text-4xl font-bold text-gray-900">
+              Find Your Game Anytime
+            </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Discover courts in your area. Whether you're into tennis, basketball, badminton, or any other sport, we've
-              got you covered.
+              Discover courts in your area. Whether you're into tennis,
+              basketball, badminton, or any other sport, we've got you covered.
             </p>
 
             {/* Search Bar */}
@@ -214,13 +245,22 @@ export default function HomePage() {
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1 relative">
                   <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                  <Input placeholder="Enter location..." className="pl-10 h-12 text-lg" />
+                  <Input
+                    placeholder="Enter location..."
+                    className="pl-10 h-12 text-lg"
+                  />
                 </div>
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-                  <Input placeholder="Search sports..." className="pl-10 h-12 text-lg" />
+                  <Input
+                    placeholder="Search sports..."
+                    className="pl-10 h-12 text-lg"
+                  />
                 </div>
-                <Button size="lg" className="bg-cyan-600 hover:bg-cyan-700 px-8 h-12">
+                <Button
+                  size="lg"
+                  className="bg-cyan-600 hover:bg-cyan-700 px-8 h-12"
+                >
                   Search Courts
                 </Button>
               </div>
@@ -238,9 +278,12 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="text-center space-y-4 mb-12"
           >
-            <h2 className="text-4xl font-bold text-gray-900">Explore Popular Sports Venues</h2>
+            <h2 className="text-4xl font-bold text-gray-900">
+              Explore Popular Sports Venues
+            </h2>
             <p className="text-xl text-gray-600">
-              From football fields to badminton courts, find the most sought-after locations in your area.
+              From football fields to badminton courts, find the most
+              sought-after locations in your area.
             </p>
           </motion.div>
 
@@ -264,13 +307,17 @@ export default function HomePage() {
                     />
                     <div className="absolute top-4 right-4 bg-white px-2 py-1 rounded-full flex items-center space-x-1">
                       <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                      <span className="text-sm font-medium">{venue.rating}</span>
+                      <span className="text-sm font-medium">
+                        {venue.rating}
+                      </span>
                     </div>
                   </div>
                   <CardContent className="p-6">
                     <div className="space-y-4">
                       <div>
-                        <h3 className="text-xl font-semibold text-gray-900">{venue.name}</h3>
+                        <h3 className="text-xl font-semibold text-gray-900">
+                          {venue.name}
+                        </h3>
                         <p className="text-gray-600 flex items-center">
                           <MapPin className="h-4 w-4 mr-1" />
                           {venue.location}
@@ -279,17 +326,25 @@ export default function HomePage() {
                       <div className="flex items-center justify-between">
                         <div className="flex space-x-2">
                           {venue.sports.map((sport) => (
-                            <Badge key={sport} variant="secondary" className="text-xs">
+                            <Badge
+                              key={sport}
+                              variant="secondary"
+                              className="text-xs"
+                            >
                               {sport}
                             </Badge>
                           ))}
                         </div>
                         <div className="text-right">
-                          <p className="text-2xl font-bold text-cyan-600">${venue.price}</p>
+                          <p className="text-2xl font-bold text-cyan-600">
+                            ${venue.price}
+                          </p>
                           <p className="text-sm text-gray-500">per hour</p>
                         </div>
                       </div>
-                      <Button className="w-full bg-cyan-600 hover:bg-cyan-700">View Courts</Button>
+                      <Button className="w-full bg-cyan-600 hover:bg-cyan-700">
+                        View Courts
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
@@ -326,10 +381,13 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="text-center space-y-4 mb-16"
           >
-            <h2 className="text-4xl font-bold text-gray-900">Ready to play? Start exploring now!</h2>
+            <h2 className="text-4xl font-bold text-gray-900">
+              Ready to play? Start exploring now!
+            </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Be part of a growing sports community! Connect with players, join exciting sessions, or create your own
-              league. Whether you're a beginner or a seasoned competitor, there's a place for you.
+              Be part of a growing sports community! Connect with players, join
+              exciting sessions, or create your own league. Whether you're a
+              beginner or a seasoned competitor, there's a place for you.
             </p>
           </motion.div>
 
@@ -338,12 +396,14 @@ export default function HomePage() {
               {
                 icon: Search,
                 title: "Find Courts",
-                description: "Search for courts by location, sport, and availability",
+                description:
+                  "Search for courts by location, sport, and availability",
               },
               {
                 icon: Clock,
                 title: "Book Instantly",
-                description: "Reserve your preferred time slot with just a few clicks",
+                description:
+                  "Reserve your preferred time slot with just a few clicks",
               },
               {
                 icon: Users,
@@ -362,7 +422,9 @@ export default function HomePage() {
                 <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto">
                   <step.icon className="h-8 w-8 text-cyan-600" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-900">{step.title}</h3>
+                <h3 className="text-xl font-semibold text-gray-900">
+                  {step.title}
+                </h3>
                 <p className="text-gray-600">{step.description}</p>
               </motion.div>
             ))}
@@ -379,14 +441,20 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="space-y-8"
           >
-            <h2 className="text-4xl lg:text-5xl font-bold text-white">Ready to Play? Book Your Spot Now!</h2>
+            <h2 className="text-4xl lg:text-5xl font-bold text-white">
+              Ready to Play? Book Your Spot Now!
+            </h2>
             <p className="text-xl text-cyan-100 max-w-2xl mx-auto">
-              Don't wait to secure your venue today at night! It's time to make your sports dreams come true. Book now
-              and get the perfect match for you.
+              Don't wait to secure your venue today at night! It's time to make
+              your sports dreams come true. Book now and get the perfect match
+              for you.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/search">
-                <Button size="lg" className="bg-yellow-400 text-black hover:bg-yellow-500 px-8 py-4 text-lg">
+                <Button
+                  size="lg"
+                  className="bg-yellow-400 text-black hover:bg-yellow-500 px-8 py-4 text-lg"
+                >
                   Book a Court
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
@@ -411,18 +479,29 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div className="space-y-4">
               <h3 className="text-2xl font-bold">QuickCourt</h3>
-              <p className="text-gray-400">Your go-to platform for booking sports courts instantly.</p>
+              <p className="text-gray-400">
+                Your go-to platform for booking sports courts instantly.
+              </p>
             </div>
             <div className="space-y-4">
               <h4 className="text-lg font-semibold">Quick Links</h4>
               <div className="space-y-2">
-                <Link href="/search" className="block text-gray-400 hover:text-white">
+                <Link
+                  href="/search"
+                  className="block text-gray-400 hover:text-white"
+                >
                   Find Courts
                 </Link>
-                <Link href="/how-it-works" className="block text-gray-400 hover:text-white">
+                <Link
+                  href="/how-it-works"
+                  className="block text-gray-400 hover:text-white"
+                >
                   How It Works
                 </Link>
-                <Link href="/pricing" className="block text-gray-400 hover:text-white">
+                <Link
+                  href="/pricing"
+                  className="block text-gray-400 hover:text-white"
+                >
                   Pricing
                 </Link>
               </div>
@@ -430,13 +509,22 @@ export default function HomePage() {
             <div className="space-y-4">
               <h4 className="text-lg font-semibold">Support</h4>
               <div className="space-y-2">
-                <Link href="/help" className="block text-gray-400 hover:text-white">
+                <Link
+                  href="/help"
+                  className="block text-gray-400 hover:text-white"
+                >
                   Help Center
                 </Link>
-                <Link href="/contact" className="block text-gray-400 hover:text-white">
+                <Link
+                  href="/contact"
+                  className="block text-gray-400 hover:text-white"
+                >
                   Contact Us
                 </Link>
-                <Link href="/terms" className="block text-gray-400 hover:text-white">
+                <Link
+                  href="/terms"
+                  className="block text-gray-400 hover:text-white"
+                >
                   Terms of Service
                 </Link>
               </div>
@@ -462,5 +550,5 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
-  )
+  );
 }
