@@ -13,6 +13,7 @@ import {
 import { DashboardSkeleton } from "@/components/ui/loading-skeleton";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatCurrency } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
   Activity,
@@ -30,12 +31,6 @@ import {
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(amount || 0);
-};
 
 interface DashboardStats {
   totalBookings: number;

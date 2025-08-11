@@ -29,6 +29,12 @@ import {
   Moon,
   Monitor
 } from "lucide-react"
+import {
+  NavigationMenu,
+  NavigationMenuList,
+  NavigationMenuItem,
+  NavigationMenuLink,
+} from "@/components/ui/navigation-menu"
 import { useTheme } from "next-themes"
 
 const navigationItems = [
@@ -57,7 +63,7 @@ export function Navigation() {
     if (item.public) return true
     if (!session) return false
     if (!item.roles) return true
-    return item.roles.includes(session.user?.role)
+    return item.roles.includes((session.user as any)?.role)
   })
 
   const ThemeToggle = () => (
@@ -108,7 +114,7 @@ export function Navigation() {
               {session?.user?.email}
             </p>
             <Badge variant="secondary" className="w-fit mt-1">
-              {session?.user?.role}
+              {(session?.user as any)?.role}
             </Badge>
           </div>
         </DropdownMenuLabel>
@@ -154,20 +160,25 @@ export function Navigation() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {filteredNavItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`transition-colors hover:text-foreground/80 ${
-                  pathname === item.href 
-                    ? "text-foreground font-medium" 
-                    : "text-foreground/60"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+          <div className="hidden md:flex items-center">
+            <NavigationMenu>
+              <NavigationMenuList>
+                {filteredNavItems.map((item) => (
+                  <NavigationMenuItem key={item.href}>
+                    <NavigationMenuLink asChild>
+                      <Link
+                        href={item.href}
+                        className={`px-3 py-2 rounded-md transition-colors hover:bg-accent hover:text-accent-foreground ${
+                          pathname === item.href ? "bg-accent/50" : ""
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    </NavigationMenuLink>
+                  </NavigationMenuItem>
+                ))}
+              </NavigationMenuList>
+            </NavigationMenu>
           </div>
 
           {/* Desktop Actions */}

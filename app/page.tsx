@@ -63,37 +63,7 @@ const featuredVenues = [
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-600 via-teal-600 to-blue-700">
-      {/* Hero Navigation Overlay - for home page specific styling */}
-      <nav className="absolute top-0 left-0 right-0 z-50 p-6">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="hidden md:flex items-center space-x-8 text-white ml-auto">
-            <Link
-              href="/search"
-              className="hover:text-yellow-300 transition-colors"
-            >
-              Find Courts
-            </Link>
-            <Link
-              href="/how-it-works"
-              className="hover:text-yellow-300 transition-colors"
-            >
-              How it Works
-            </Link>
-            <Link
-              href="/about"
-              className="hover:text-yellow-300 transition-colors"
-            >
-              About
-            </Link>
-            <Link
-              href="/contact"
-              className="hover:text-yellow-300 transition-colors"
-            >
-              Contact
-            </Link>
-          </div>
-        </div>
-      </nav>
+      {/* Removed page-level hero nav to avoid overlap with global navigation */}
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -379,65 +349,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center space-y-4 mb-16"
-          >
-            <h2 className="text-4xl font-bold text-gray-900">
-              Ready to play? Start exploring now!
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Be part of a growing sports community! Connect with players, join
-              exciting sessions, or create your own league. Whether you're a
-              beginner or a seasoned competitor, there's a place for you.
-            </p>
-          </motion.div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Search,
-                title: "Find Courts",
-                description:
-                  "Search for courts by location, sport, and availability",
-              },
-              {
-                icon: Clock,
-                title: "Book Instantly",
-                description:
-                  "Reserve your preferred time slot with just a few clicks",
-              },
-              {
-                icon: Users,
-                title: "Play Together",
-                description: "Connect with other players and enjoy your game",
-              },
-            ].map((step, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.2 }}
-                className="text-center space-y-4"
-              >
-                <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto text-secondary-foreground">
-                  <step.icon className="h-8 w-8 text-cyan-600" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900">
-                  {step.title}
-                </h3>
-                <p className="text-gray-600">{step.description}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Removed How It Works section as requested */}
 
       {/* CTA Section */}
       <section className="py-20 bg-gradient-to-r from-cyan-600 to-blue-600">
@@ -498,12 +410,7 @@ export default function HomePage() {
                 >
                   Find Courts
                 </Link>
-                <Link
-                  href="/how-it-works"
-                  className="block text-gray-400 hover:text-white"
-                >
-                  How It Works
-                </Link>
+                {/* How It Works link removed */}
                 <Link
                   href="/pricing"
                   className="block text-gray-400 hover:text-white"
