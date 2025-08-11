@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  phone         String?
+  role          Role      @default(USER)
+  isVerified    Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  venues   Venue[]
+  bookings Booking[]
+  otpCodes OtpCode[]
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  code      String
+  email     String
+  phone     String?
+  type      OtpType
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+}
+
+model Venue {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  address     String
+  city        String
+  state       String
+  zipCode     String
+  latitude    Float?
+  longitude   Float?
+  images      String?  @db.Text // JSON array of image URLs
+  amenities   String?  @db.Text // JSON array of amenities
+  rating      Float    @default(0)
+  totalRating Int      @default(0)
+  isApproved  Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  owner   User   @relation(fields: [ownerId], references: [id])
+  ownerId String
+
+  courts Court[]
+}
+
+model Court {
+  id              String   @id @default(cuid())
+  name            String
+  sport           Sport
+  pricePerHour    Float
+  slotDuration    Int      @default(60) // in minutes
+  operatingHours  String   @db.Text // JSON object with daily hours
+  description     String?  @db.Text
+  images          String?  @db.Text // JSON array of image URLs
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  venue   Venue  @relation(fields: [venueId], references: [id])
+  venueId String
+
+  bookings      Booking[]
+  blockedSlots  BlockedSlot[]
+  availability  Availability[]
+}
+
+model Availability {
+  id        String    @id @default(cuid())
+  dayOfWeek Int // 0-6 (Sunday-Saturday)
+  startTime String // HH:MM format
+  endTime   String // HH:MM format
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+
+  court   Court  @relation(fields: [courtId], references: [id])
+  courtId String
+
+  @@unique([courtId, dayOfWeek, startTime, endTime])
+}
+
+model BlockedSlot {
+  id        String   @id @default(cuid())
+  date      DateTime
+  startTime String // HH:MM format
+  endTime   String // HH:MM format
+  reason    String?
+  createdAt DateTime @default(now())
+
+  court   Court  @relation(fields: [courtId], references: [id])
+  courtId String
+}
+
+model Booking {
+  id            String        @id @default(cuid())
+  date          DateTime
+  startTime     String // HH:MM format
+  endTime       String // HH:MM format
+  totalAmount   Float
+  depositAmount Float?
+  status        BookingStatus @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentId     String?
+  notes         String?       @db.Text
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  user    User   @relation(fields: [userId], references: [id])
+  userId  String
+  court   Court  @relation(fields: [courtId], references: [id])
+  courtId String
+
+  @@unique([courtId, date, startTime, endTime])
+}
+
+enum Role {
+  USER
+  OWNER
+  ADMIN
+}
+
+enum OtpType {
+  EMAIL_VERIFICATION
+  PHONE_VERIFICATION
+  PASSWORD_RESET
+}
+
+enum Sport {
+  TENNIS
+  BASKETBALL
+  FOOTBALL
+  BADMINTON
+  VOLLEYBALL
+  SQUASH
+  CRICKET
+  SOCCER
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
