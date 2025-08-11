@@ -15,7 +15,7 @@ export async function POST(
 ) {
   try {
     const session = await auth();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (session.user as any)?.isBanned) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -48,7 +48,7 @@ export async function POST(
 
     // Check if there are enough spots available
     const currentPlayersJoined = invite.requests.reduce(
-      (sum, req) => sum + req.playersCount,
+      (sum: number, req: { playersCount: number }) => sum + req.playersCount,
       0
     );
     const availableSpots = invite.playersRequired - currentPlayersJoined;

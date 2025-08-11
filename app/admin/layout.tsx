@@ -12,7 +12,7 @@ export default async function AdminLayout({
     redirect("/auth/signin?redirectUrl=/admin");
   }
 
-  if ((session.user as any)?.role !== "ADMIN") {
+  if ((session.user as any)?.role !== "ADMIN" || (session.user as any)?.isBanned) {
     redirect("/dashboard");
   }
 

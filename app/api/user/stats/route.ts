@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const session = await auth();
 
-    if (!session || session.user.role !== "USER") {
+    if (!session || session.user.role !== "USER" || (session.user as any)?.isBanned) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -25,14 +25,14 @@ export async function GET() {
 
     // Calculate user stats
     const totalSpent = bookings.reduce(
-      (sum, booking) => sum + booking.totalAmount,
+      (sum: number, booking: any) => sum + booking.totalAmount,
       0
     );
     const completedBookings = bookings.filter(
-      (b) => b.status === "COMPLETED"
+      (b: any) => b.status === "COMPLETED"
     ).length;
     const upcomingBookings = bookings.filter(
-      (b) => b.status === "CONFIRMED" && new Date(b.date) >= new Date()
+      (b: any) => b.status === "CONFIRMED" && new Date(b.date) >= new Date()
     ).length;
 
     return NextResponse.json({

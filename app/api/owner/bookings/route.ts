@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
   try {
     const session = await auth()
 
-    if (!session || session.user.role !== "OWNER") {
+    if (!session || session.user.role !== "OWNER" || (session.user as any)?.isBanned) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 

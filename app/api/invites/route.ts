@@ -30,7 +30,7 @@ const createInviteSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (session.user as any)?.isBanned) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -138,10 +138,12 @@ export async function GET(request: NextRequest) {
     });
 
     // Calculate players still required
-    const invitesWithPlayersLeft = invites.map((invite) => ({
+    const invitesWithPlayersLeft = invites.map(
+      (invite: { playersRequired: number; playersJoined: number } & Record<string, any>) => ({
       ...invite,
       playersLeft: invite.playersRequired - invite.playersJoined,
-    }));
+      })
+    );
 
     return NextResponse.json({ invites: invitesWithPlayersLeft });
   } catch (error) {

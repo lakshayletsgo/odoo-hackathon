@@ -23,7 +23,7 @@ const { auth, signIn, signOut, handlers } = (NextAuth as any)({
           where: { email: credentials.email as string },
         })
 
-        if (!user || !user.isVerified || !user.isActive) {
+        if (!user || !user.isVerified || !user.isActive || user.isBanned) {
           return null
         }
 
@@ -38,6 +38,7 @@ const { auth, signIn, signOut, handlers } = (NextAuth as any)({
           name: user.name,
           role: user.role,
           image: user.image,
+          isBanned: user.isBanned,
         }
       },
     }),
@@ -47,6 +48,7 @@ const { auth, signIn, signOut, handlers } = (NextAuth as any)({
     async jwt({ token, user }: { token: any; user: any }) {
       if (user) {
         token.role = user.role
+        token.isBanned = user.isBanned
       }
       return token
     },
@@ -54,6 +56,7 @@ const { auth, signIn, signOut, handlers } = (NextAuth as any)({
       if (token) {
         session.user.id = token.sub!
         session.user.role = token.role as string
+        session.user.isBanned = token.isBanned as boolean
       }
       return session
     },

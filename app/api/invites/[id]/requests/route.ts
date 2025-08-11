@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const session = await auth();
-    if (!session?.user?.id) {
+    if (!session?.user?.id || (session.user as any)?.isBanned) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

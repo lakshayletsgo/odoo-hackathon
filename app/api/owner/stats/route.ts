@@ -6,7 +6,7 @@ export async function GET() {
   try {
     const session = await auth()
 
-    if (!session || session.user.role !== "OWNER") {
+    if (!session || session.user.role !== "OWNER" || (session.user as any)?.isBanned) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
@@ -30,24 +30,33 @@ export async function GET() {
 
     // Calculate stats
     const totalBookings = venues.reduce(
-      (total, venue) => total + venue.courts.reduce((courtTotal, court) => courtTotal + court.bookings.length, 0),
-      0,
-    )
-
-    const totalRevenue = venues.reduce(
-      (total, venue) =>
+      (total: number, venue: any) =>
         total +
         venue.courts.reduce(
-          (courtTotal, court) =>
-            courtTotal + court.bookings.reduce((bookingTotal, booking) => bookingTotal + booking.totalAmount, 0),
+          (courtTotal: number, court: any) => courtTotal + court.bookings.length,
           0,
         ),
       0,
     )
 
-    const activeVenues = venues.filter((venue) => venue.isActive).length
+    const totalRevenue = venues.reduce(
+      (total: number, venue: any) =>
+        total +
+        venue.courts.reduce(
+          (courtTotal: number, court: any) =>
+            courtTotal +
+            court.bookings.reduce(
+              (bookingTotal: number, booking: any) => bookingTotal + booking.totalAmount,
+              0,
+            ),
+          0,
+        ),
+      0,
+    )
+
+    const activeVenues = venues.filter((venue: any) => venue.isActive).length
     const activeCourts = venues.reduce(
-      (total, venue) => total + venue.courts.filter((court) => court.isActive).length,
+      (total: number, venue: any) => total + venue.courts.filter((court: any) => court.isActive).length,
       0,
     )
 
