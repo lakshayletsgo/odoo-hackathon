@@ -1,7 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { getServerSession } from "next-auth"
-import { authOptions } from "@/lib/auth"
+import { auth } from "@/lib/auth"
 import { z } from "zod"
 
 const createVenueSchema = z.object({
@@ -66,7 +65,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Filter out venues with no matching courts
-    const filteredVenues = venues.filter((venue) => venue.courts.length > 0)
+    const filteredVenues = venues.filter((venue: any) => venue.courts.length > 0)
 
     return NextResponse.json(filteredVenues)
   } catch (error) {
@@ -77,7 +76,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await auth()
 
     if (!session || session.user.role !== "OWNER") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })

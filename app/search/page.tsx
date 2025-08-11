@@ -12,6 +12,7 @@ import { Search, MapPin, Star, Filter, Grid, List, Clock, DollarSign } from "luc
 import Image from "next/image"
 import Link from "next/link"
 import { formatCurrency } from "@/lib/utils"
+import { SearchResultsSkeleton } from "@/components/ui/loading-skeleton"
 
 const mockVenues = [
   {
@@ -90,6 +91,7 @@ export default function SearchPage() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [showFilters, setShowFilters] = useState(false)
   const [venues, setVenues] = useState(mockVenues)
+  const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
     // Filter and sort venues based on current filters
@@ -254,8 +256,11 @@ export default function SearchPage() {
         </div>
 
         {/* Venue Grid/List */}
-        <div className={viewMode === "grid" ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
-          {venues.map((venue, index) => (
+        {isLoading ? (
+          <SearchResultsSkeleton />
+        ) : (
+          <div className={viewMode === "grid" ? "grid md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"}>
+            {venues.map((venue, index) => (
             <motion.div
               key={venue.id}
               initial={{ opacity: 0, y: 20 }}
@@ -329,8 +334,9 @@ export default function SearchPage() {
                 </CardContent>
               </Card>
             </motion.div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {venues.length === 0 && (
           <div className="text-center py-12">
