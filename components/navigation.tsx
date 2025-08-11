@@ -150,9 +150,7 @@ export function Navigation() {
               <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
                 <Building2 className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-                QuickCourt
-              </span>
+              <span className="text-xl font-bold ">QuickCourt</span>
             </Link>
           </div>
 
@@ -210,7 +208,7 @@ export function Navigation() {
                     <div className="flex items-center space-x-3 p-4 bg-muted rounded-lg">
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={session.user?.image || ""} />
-                        <AvatarFallback className="bg-cyan-500 text-white">
+                        <AvatarFallback className="bg-primary text-primary-foreground">
                           {getInitials(session.user?.name || "U")}
                         </AvatarFallback>
                       </Avatar>

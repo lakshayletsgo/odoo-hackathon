@@ -101,17 +101,15 @@ export default function SearchPage() {
           city: venue.city,
           rating: venue.rating || 0,
           totalRatings: venue.reviewCount || 0,
-          priceRange: [
-            venue.pricePerHour || 25,
-            (venue.pricePerHour || 25) + 20,
-          ] as [number, number],
+          priceRange: venue.pricePerHour ? [
+            venue.pricePerHour,
+            venue.pricePerHour,
+          ] as [number, number] : [0, 0] as [number, number],
           image: venue.images?.[0] || "/placeholder.svg",
-          sports: venue.courts?.map((court: any) => court.sport) || [
-            venue.sport || "Basketball",
-          ],
-          amenities: venue.amenities || ["Parking", "Locker Rooms"],
-          distance: (Math.random() * 3 + 0.5) * 1.609344, // Mock distance in kilometers
-          courts: venue.courts?.length || 1,
+          sports: venue.courts?.map((court: any) => court.sport).filter(Boolean) || [],
+          amenities: venue.amenities || [],
+          distance: 0, // Distance will be calculated properly when location services are implemented
+          courts: venue.courts?.length || 0,
         }));
         setVenues(transformedVenues);
       }
@@ -164,14 +162,14 @@ export default function SearchPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
 
       {/* Search Bar */}
-      <div className="bg-white shadow-sm">
+      <div className="bg-card shadow-sm">
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
               <Input
                 placeholder="Search courts, sports, or venues..."
                 value={searchQuery}
@@ -180,7 +178,7 @@ export default function SearchPage() {
               />
             </div>
             <div className="flex-1 relative">
-              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
               <Input
                 placeholder="Enter location..."
                 value={location}
@@ -204,7 +202,7 @@ export default function SearchPage() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="mt-6 p-6 bg-gray-50 rounded-lg space-y-6"
+              className="mt-6 p-6 bg-muted rounded-lg space-y-6"
             >
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="space-y-2">
@@ -267,7 +265,7 @@ export default function SearchPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
-              {venues.length} courts found
+              {sortedVenues.length} {sortedVenues.length === 1 ? 'venue' : 'venues'} found
             </h1>
             <p className="text-gray-600">
               {location && `in ${location}`}{" "}
@@ -303,7 +301,7 @@ export default function SearchPage() {
                 : "space-y-4"
             }
           >
-            {venues.map((venue, index) => (
+            {sortedVenues.map((venue, index) => (
               <motion.div
                 key={venue.id}
                 initial={{ opacity: 0, y: 20 }}
@@ -358,9 +356,11 @@ export default function SearchPage() {
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {venue.distance.toFixed(2)} km away
-                          </p>
+                          {venue.distance > 0 && (
+                            <p className="text-sm text-gray-500 mt-1">
+                              {venue.distance.toFixed(2)} km away
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -378,15 +378,18 @@ export default function SearchPage() {
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4 text-sm text-gray-600">
-                          <span className="flex items-center">
-                            <Clock className="h-4 w-4 mr-1" />
-                            {venue.courts} courts
-                          </span>
-                          <span className="flex items-center">
-                            <Tag className="h-4 w-4 mr-1" />
-                            {formatCurrency(venue.priceRange[0])}-
-                            {formatCurrency(venue.priceRange[1])}/hr
-                          </span>
+                          {venue.courts > 0 && (
+                            <span className="flex items-center">
+                              <Clock className="h-4 w-4 mr-1" />
+                              {venue.courts} {venue.courts === 1 ? 'court' : 'courts'}
+                            </span>
+                          )}
+                          {venue.priceRange[0] > 0 && (
+                            <span className="flex items-center">
+                              <Tag className="h-4 w-4 mr-1" />
+                              {formatCurrency(venue.priceRange[0])}/hr
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -406,13 +409,13 @@ export default function SearchPage() {
           </div>
         )}
 
-        {venues.length === 0 && (
+        {sortedVenues.length === 0 && !isLoading && (
           <div className="text-center py-12">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Search className="h-12 w-12 text-gray-400" />
             </div>
             <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              No courts found
+              No venues found
             </h3>
             <p className="text-gray-600 mb-4">
               Try adjusting your search criteria or location

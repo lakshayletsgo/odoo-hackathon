@@ -38,7 +38,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-600 via-teal-600 to-blue-700">
+    <div className="min-h-screen bg-background">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
         {/* Background Elements */}
@@ -50,14 +50,14 @@ export default function HomePage() {
               repeat: Number.POSITIVE_INFINITY,
               ease: "linear",
             }}
-            className="absolute top-20 right-20 w-32 h-32 opacity-20"
+            className="absolute top-20 right-20 w-32 h-32 opacity-10"
           >
-            <div className="w-full h-full rounded-full border-4 border-white"></div>
+            <div className="w-full h-full rounded-full border-4 border-primary/30"></div>
           </motion.div>
           <motion.div
             animate={{ y: [0, -20, 0] }}
             transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY }}
-            className="absolute bottom-40 left-20 w-16 h-16 bg-primary rounded-full opacity-30"
+            className="absolute bottom-40 left-20 w-16 h-16 bg-primary rounded-full opacity-20"
           ></motion.div>
         </div>
 
@@ -67,7 +67,7 @@ export default function HomePage() {
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
-            className="text-white space-y-8"
+            className="text-foreground space-y-8"
           >
             <div className="space-y-4">
               <motion.h1
@@ -83,7 +83,7 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="text-xl lg:text-2xl text-white/95 max-w-lg leading-relaxed"
+                className="text-xl lg:text-2xl text-foreground/80 max-w-lg leading-relaxed"
               >
                 Anytime, anywhere—get ready to play! Book your favorite sports
                 courts instantly and join the game.
@@ -101,7 +101,7 @@ export default function HomePage() {
                 <Badge
                   key={sport.name}
                   variant="secondary"
-                  className="bg-white/90 text-slate-800 border-white hover:bg-white transition-colors text-sm px-3 py-1 font-medium"
+                  className="bg-secondary text-secondary-foreground border-secondary hover:bg-secondary/90 transition-colors text-sm px-3 py-1 font-medium"
                 >
                   {sport.icon} {sport.name}
                 </Badge>
@@ -118,7 +118,7 @@ export default function HomePage() {
               <Link href="/search" className="z-10">
                 <Button
                   size="lg"
-                  className="bg-primary hover:bg-primary/90 text-black px-8 py-4 text-lg font-semibold"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 text-lg font-semibold"
                 >
                   Find Courts
                   <Search className="ml-2 h-5 w-5" />
@@ -128,7 +128,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-white text-white hover:bg-white hover:text-black px-8 py-4 text-lg bg-transparent"
+                  className="border-border text-foreground hover:bg-accent hover:text-accent-foreground px-8 py-4 text-lg bg-transparent"
                 >
                   Play Together
                   <Users className="ml-2 h-5 w-5" />
@@ -159,14 +159,14 @@ export default function HomePage() {
                 transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
                 className="absolute top-10 right-10 bg-primary p-3 rounded-full shadow-lg"
               >
-                <Trophy className="h-6 w-6 text-black" />
+                <Trophy className="h-6 w-6 text-primary-foreground" />
               </motion.div>
               <motion.div
                 animate={{ y: [0, 10, 0] }}
                 transition={{ duration: 2.5, repeat: Number.POSITIVE_INFINITY }}
-                className="absolute bottom-20 left-10 bg-white p-3 rounded-full shadow-lg"
+                className="absolute bottom-20 left-10 bg-secondary p-3 rounded-full shadow-lg"
               >
-                <Play className="h-6 w-6 text-cyan-600" />
+                <Play className="h-6 w-6 text-secondary-foreground" />
               </motion.div>
             </div>
           </motion.div>
@@ -174,7 +174,7 @@ export default function HomePage() {
       </section>
 
       {/* Search Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-card">
         <div className="max-w-4xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -182,33 +182,33 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="text-center space-y-8"
           >
-            <h2 className="text-4xl font-bold text-slate-900">
+            <h2 className="text-4xl font-bold text-foreground">
               Find Your Game Anytime
             </h2>
-            <p className="text-xl text-slate-700 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Discover courts in your area. Whether you're into tennis,
               basketball, badminton, or any other sport, we've got you covered.
             </p>
 
             {/* Search Bar */}
-            <div className="bg-slate-50 p-8 rounded-2xl shadow-lg border border-slate-200">
+            <div className="bg-muted p-8 rounded-2xl shadow-lg border border-border">
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 h-5 w-5" />
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
                   <Input
                     placeholder="Enter location..."
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className="pl-10 h-12 text-lg border-slate-300 focus:border-primary text-slate-900 placeholder:text-slate-500"
+                    className="pl-10 h-12 text-lg border-input focus:border-primary text-foreground placeholder:text-muted-foreground"
                   />
                 </div>
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 h-5 w-5" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
                   <Input
                     placeholder="Search sports..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 h-12 text-lg border-slate-300 focus:border-primary text-slate-900 placeholder:text-slate-500"
+                    className="pl-10 h-12 text-lg border-input focus:border-primary text-foreground placeholder:text-muted-foreground"
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
                         handleSearch();
@@ -230,7 +230,7 @@ export default function HomePage() {
       </section>
 
       {/* Sports Selection Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-muted">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -238,10 +238,10 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="text-center space-y-8"
           >
-            <h2 className="text-4xl font-bold text-slate-900">
+            <h2 className="text-4xl font-bold text-foreground">
               Choose Your Sport
             </h2>
-            <p className="text-xl text-slate-700 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               Select your favorite sport and discover courts near you. Click on
               any sport to start exploring!
             </p>
@@ -260,16 +260,16 @@ export default function HomePage() {
                   className="cursor-pointer"
                   onClick={() => handleSportClick(sport.name)}
                 >
-                  <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 group">
+                  <div className="bg-card rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 group">
                     <div
                       className={`w-16 h-16 ${sport.color} rounded-xl flex items-center justify-center mx-auto mb-4 text-2xl group-hover:scale-110 transition-transform`}
                     >
                       {sport.icon}
                     </div>
-                    <h3 className="font-semibold text-slate-900 group-hover:text-primary transition-colors">
+                    <h3 className="font-semibold text-foreground group-hover:text-primary transition-colors">
                       {sport.name}
                     </h3>
-                    <p className="text-sm text-slate-600 mt-1">
+                    <p className="text-sm text-muted-foreground mt-1">
                       Find courts near you
                     </p>
                   </div>
@@ -296,7 +296,7 @@ export default function HomePage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-card">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -304,10 +304,10 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="text-center space-y-4 mb-12"
           >
-            <h2 className="text-4xl font-bold text-slate-900">
+            <h2 className="text-4xl font-bold text-foreground">
               Why Choose Our Platform?
             </h2>
-            <p className="text-xl text-slate-700 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               We make it easy to find and book sports venues with just a few
               clicks
             </p>
@@ -342,8 +342,8 @@ export default function HomePage() {
                 <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold mb-2 text-slate-900">{feature.title}</h3>
-                <p className="text-slate-700">{feature.description}</p>
+                <h3 className="text-xl font-semibold mb-2 text-foreground">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -351,7 +351,7 @@ export default function HomePage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary to-blue-600">
+      <section className="py-20 bg-gradient-to-r from-primary to-secondary">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <motion.div
             initial={{ opacity: 0, y: 50 }}
@@ -359,13 +359,13 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="space-y-6"
           >
-            <h2 className="text-4xl font-bold text-white drop-shadow-md">Ready to Play?</h2>
-            <p className="text-xl text-white/95 leading-relaxed">
+            <h2 className="text-4xl font-bold text-primary-foreground drop-shadow-md">Ready to Play?</h2>
+            <p className="text-xl text-primary-foreground/90 leading-relaxed">
               Join thousands of players who book their courts with us
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/search">
-                <Button size="lg" variant="secondary" className="px-8 py-3 bg-white text-slate-900 hover:bg-white/90 font-semibold shadow-lg">
+                <Button size="lg" variant="secondary" className="px-8 py-3 bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold shadow-lg">
                   Book a Court
                 </Button>
               </Link>
@@ -373,7 +373,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="px-8 py-3 border-2 border-white text-white hover:bg-white hover:text-slate-900 font-semibold transition-all duration-200"
+                  className="px-8 py-3 border-2 border-primary-foreground text-primary-foreground hover:bg-primary-foreground hover:text-secondary font-semibold transition-all duration-200"
                 >
                   Sign Up Free
                 </Button>
