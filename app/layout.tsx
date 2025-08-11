@@ -1,3 +1,4 @@
+import { Footer } from "@/components/footer";
 import { Navigation } from "@/components/navigation";
 import { Toaster } from "@/components/ui/toaster";
 import type { Metadata } from "next";
@@ -25,7 +26,8 @@ export default function RootLayout({
       <body className={inter.className}>
         <Providers>
           <Navigation />
-          <main>{children}</main>
+          <main className="min-h-screen">{children}</main>
+          <Footer />
           <Toaster />
         </Providers>
       </body>

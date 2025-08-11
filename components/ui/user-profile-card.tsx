@@ -2,7 +2,6 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Calendar, Mail, Phone, Settings, User } from "lucide-react";
+import { Calendar, Mail, Phone, User } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 interface UserProfileCardProps {
@@ -73,10 +72,6 @@ export function UserProfileCard({ user }: UserProfileCardProps) {
               </Badge>
             </CardDescription>
           </div>
-          <Button variant="outline" size="sm">
-            <Settings className="h-4 w-4 mr-2" />
-            Edit Profile
-          </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">

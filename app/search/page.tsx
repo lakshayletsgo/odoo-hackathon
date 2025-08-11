@@ -18,7 +18,7 @@ import { formatCurrency } from "@/lib/utils";
 import { motion } from "framer-motion";
 import {
   Clock,
-  DollarSign,
+  Tag,
   Filter,
   Grid,
   List,
@@ -383,7 +383,7 @@ export default function SearchPage() {
                             {venue.courts} courts
                           </span>
                           <span className="flex items-center">
-                            <DollarSign className="h-4 w-4 mr-1" />
+                            <Tag className="h-4 w-4 mr-1" />
                             {formatCurrency(venue.priceRange[0])}-
                             {formatCurrency(venue.priceRange[1])}/hr
                           </span>
@@ -396,9 +396,7 @@ export default function SearchPage() {
                             View Courts
                           </Button>
                         </Link>
-                        <Button variant="outline" size="sm">
-                          Save
-                        </Button>
+                        
                       </div>
                     </div>
                   </CardContent>
