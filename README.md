@@ -205,39 +205,16 @@ Demo actions include:
 └── types/               # TypeScript type definitions
 ```
 
-## 🤝 Contributing
 
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-### Development Guidelines
-- Follow TypeScript best practices
-- Use Prettier for code formatting
-- Write meaningful commit messages
-- Add JSDoc comments for complex functions
-- Ensure responsive design for all features
 
 ## 👨‍💻 Contributors
 
 This project was developed by a dedicated team during a hackathon focused on creating innovative sports booking solutions:
 
 ### Core Development Team
-- **Lead Full-Stack Developer** - Architecture design, Play Together feature implementation, API development
-- **Frontend Specialist** - UI/UX design, React components, responsive layout implementation
-- **Backend Engineer** - Database design, authentication system, booking logic
-- **DevOps & Integration** - Deployment setup, third-party integrations, performance optimization
-
-### Special Recognition
-- **Project Manager** - Feature planning, user story definition, sprint coordination
-- **UI/UX Designer** - Design system creation, user experience optimization
-- **Quality Assurance** - Testing, bug identification, user acceptance testing
-
-*Note: This project was created as part of an Odoo hackathon focusing on innovative web applications using modern technologies.*
+- Lakshay Goel - lakshaygoel911@gmail.com
+- Kushal Girdhar - kushalgirdhar04@gmail.com
+- Rishab Yadav - rishabyadav0811@gmail.com
 
 ## 📈 Features Roadmap
 
