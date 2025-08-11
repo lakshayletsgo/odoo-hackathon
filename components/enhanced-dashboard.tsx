@@ -1,57 +1,67 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { motion } from "framer-motion"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Progress } from "@/components/ui/progress"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { 
-  Calendar, 
-  DollarSign, 
-  MapPin, 
-  Users, 
-  TrendingUp, 
-  CheckCircle, 
-  XCircle,
-  Clock,
-  Star,
-  ArrowUpRight,
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { DashboardSkeleton } from "@/components/ui/loading-skeleton";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { motion } from "framer-motion";
+import {
+  Activity,
   ArrowDownRight,
-  Activity
-} from "lucide-react"
-import { formatCurrency } from "@/lib/utils"
-import Link from "next/link"
-import { DashboardSkeleton, StatsCardSkeleton } from "@/components/ui/loading-skeleton"
+  ArrowUpRight,
+  Calendar,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  MapPin,
+  Star,
+  TrendingUp,
+  XCircle,
+} from "lucide-react";
+import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+const formatCurrency = (amount: number) => {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount || 0);
+};
 
 interface DashboardStats {
-  totalBookings: number
-  totalRevenue: number
-  activeVenues: number
-  activeCourts: number
-  monthlyGrowth: number
-  weeklyBookings: number
-  averageRating: number
-  completionRate: number
+  totalBookings: number;
+  totalRevenue: number;
+  activeVenues: number;
+  activeCourts: number;
+  monthlyGrowth: number;
+  weeklyBookings: number;
+  averageRating: number;
+  completionRate: number;
 }
 
 interface Booking {
-  id: string
-  user: { name: string; email: string; image?: string }
-  court: { name: string; venue: { name: string } }
-  date: string
-  startTime: string
-  endTime: string
-  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED'
-  totalAmount: number
-  createdAt: string
+  id: string;
+  user: { name: string; email: string; image?: string };
+  court: { name: string; venue: { name: string } };
+  date: string;
+  startTime: string;
+  endTime: string;
+  status: "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+  totalAmount: number;
+  createdAt: string;
 }
 
 export default function EnhancedDashboard() {
-  const { data: session } = useSession()
+  const { data: session } = useSession();
   const [stats, setStats] = useState<DashboardStats>({
     totalBookings: 0,
     totalRevenue: 0,
@@ -61,68 +71,76 @@ export default function EnhancedDashboard() {
     weeklyBookings: 0,
     averageRating: 0,
     completionRate: 0,
-  })
-  const [recentBookings, setRecentBookings] = useState<Booking[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  });
+  const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardData()
-  }, [])
+    fetchDashboardData();
+  }, []);
 
   const fetchDashboardData = async () => {
     try {
       const [statsRes, bookingsRes] = await Promise.all([
         fetch("/api/owner/stats"),
         fetch("/api/owner/bookings?limit=10"),
-      ])
+      ]);
 
       if (statsRes.ok) {
-        const statsData = await statsRes.json()
-        setStats(statsData)
+        const statsData = await statsRes.json();
+        setStats(statsData);
       }
 
       if (bookingsRes.ok) {
-        const bookingsData = await bookingsRes.json()
-        setRecentBookings(bookingsData)
+        const bookingsData = await bookingsRes.json();
+        setRecentBookings(bookingsData);
       }
     } catch (error) {
-      console.error("Failed to fetch dashboard data:", error)
+      console.error("Failed to fetch dashboard data:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
-  const handleBookingAction = async (bookingId: string, action: "confirm" | "cancel") => {
+  const handleBookingAction = async (
+    bookingId: string,
+    action: "confirm" | "cancel"
+  ) => {
     try {
       const response = await fetch(`/api/bookings/${bookingId}/${action}`, {
         method: "PUT",
-      })
+      });
 
       if (response.ok) {
-        fetchDashboardData() // Refresh data
+        fetchDashboardData(); // Refresh data
       }
     } catch (error) {
-      console.error(`Failed to ${action} booking:`, error)
+      console.error(`Failed to ${action} booking:`, error);
     }
-  }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "CONFIRMED": return "bg-green-500"
-      case "PENDING": return "bg-yellow-500"
-      case "COMPLETED": return "bg-blue-500"
-      case "CANCELLED": return "bg-red-500"
-      default: return "bg-gray-500"
+      case "CONFIRMED":
+        return "bg-green-500";
+      case "PENDING":
+        return "bg-yellow-500";
+      case "COMPLETED":
+        return "bg-blue-500";
+      case "CANCELLED":
+        return "bg-red-500";
+      default:
+        return "bg-gray-500";
     }
-  }
+  };
 
   const getInitials = (name: string) => {
     return name
       .split(" ")
       .map((n) => n[0])
       .join("")
-      .toUpperCase()
-  }
+      .toUpperCase();
+  };
 
   if (isLoading) {
     return (
@@ -131,7 +149,7 @@ export default function EnhancedDashboard() {
           <DashboardSkeleton />
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -154,27 +172,37 @@ export default function EnhancedDashboard() {
 
         {/* Enhanced Stats Cards */}
         <div className="grid gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Total Revenue
+                  </CardTitle>
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="space-y-1">
-                  <div className="text-2xl font-bold">{formatCurrency(stats.totalRevenue)}</div>
+                  <div className="text-2xl font-bold">
+                    {formatCurrency(stats.totalRevenue || 0)}
+                  </div>
                   <div className="flex items-center text-xs text-muted-foreground">
-                    {stats.monthlyGrowth > 0 ? (
+                    {(stats.monthlyGrowth || 0) > 0 ? (
                       <ArrowUpRight className="mr-1 h-3 w-3 text-green-500" />
                     ) : (
                       <ArrowDownRight className="mr-1 h-3 w-3 text-red-500" />
                     )}
-                    <span className={stats.monthlyGrowth > 0 ? "text-green-500" : "text-red-500"}>
-                      {Math.abs(stats.monthlyGrowth)}%
+                    <span
+                      className={
+                        (stats.monthlyGrowth || 0) > 0
+                          ? "text-green-500"
+                          : "text-red-500"
+                      }
+                    >
+                      {Math.abs(stats.monthlyGrowth || 0).toFixed(1)}%
                     </span>
                     <span className="ml-1">from last month</span>
                   </div>
@@ -183,50 +211,58 @@ export default function EnhancedDashboard() {
             </Card>
           </motion.div>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Bookings</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Total Bookings
+                  </CardTitle>
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="space-y-1">
-                  <div className="text-2xl font-bold">{stats.totalBookings}</div>
+                  <div className="text-2xl font-bold">
+                    {(stats.totalBookings || 0).toLocaleString()}
+                  </div>
                   <div className="text-xs text-muted-foreground">
-                    {stats.weeklyBookings} this week
+                    {stats.weeklyBookings || 0} this week
                   </div>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Average Rating
+                  </CardTitle>
                   <Star className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="space-y-1">
-                  <div className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</div>
+                  <div className="text-2xl font-bold">
+                    {(stats.averageRating || 0).toFixed(1)}
+                  </div>
                   <div className="flex items-center">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
+                        <Star
+                          key={i}
                           className={`h-3 w-3 ${
-                            i < Math.floor(stats.averageRating) 
-                              ? "fill-yellow-400 text-yellow-400" 
+                            i < Math.floor(stats.averageRating || 0)
+                              ? "fill-yellow-400 text-yellow-400"
                               : "text-muted-foreground"
-                          }`} 
+                          }`}
                         />
                       ))}
                     </div>
@@ -236,20 +272,24 @@ export default function EnhancedDashboard() {
             </Card>
           </motion.div>
 
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
           >
             <Card>
               <CardContent className="p-6">
                 <div className="flex items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Completion Rate</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Completion Rate
+                  </CardTitle>
                   <Activity className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="space-y-2">
-                  <div className="text-2xl font-bold">{stats.completionRate}%</div>
-                  <Progress value={stats.completionRate} className="h-2" />
+                  <div className="text-2xl font-bold">
+                    {stats.completionRate || 0}%
+                  </div>
+                  <Progress value={stats.completionRate || 0} className="h-2" />
                 </div>
               </CardContent>
             </Card>
@@ -277,13 +317,15 @@ export default function EnhancedDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Recent Bookings</CardTitle>
-                <CardDescription>Manage your latest court bookings</CardDescription>
+                <CardDescription>
+                  Manage your latest court bookings
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   {recentBookings.length > 0 ? (
                     recentBookings.map((booking) => (
-                      <motion.div 
+                      <motion.div
                         key={booking.id}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
@@ -298,11 +340,18 @@ export default function EnhancedDashboard() {
                           </Avatar>
                           <div className="space-y-1">
                             <div className="flex items-center space-x-2">
-                              <p className="font-medium">{booking.court?.name}</p>
-                              <div className={`w-2 h-2 rounded-full ${getStatusColor(booking.status)}`} />
+                              <p className="font-medium">
+                                {booking.court?.name}
+                              </p>
+                              <div
+                                className={`w-2 h-2 rounded-full ${getStatusColor(
+                                  booking.status
+                                )}`}
+                              />
                             </div>
                             <p className="text-sm text-muted-foreground">
-                              {booking.user?.name} • {new Date(booking.date).toLocaleDateString()}
+                              {booking.user?.name} •{" "}
+                              {new Date(booking.date).toLocaleDateString()}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {booking.startTime} - {booking.endTime}
@@ -311,16 +360,18 @@ export default function EnhancedDashboard() {
                         </div>
                         <div className="flex items-center space-x-4">
                           <div className="text-right">
-                            <p className="font-semibold">{formatCurrency(booking.totalAmount)}</p>
+                            <p className="font-semibold">
+                              {formatCurrency(booking.totalAmount)}
+                            </p>
                             <Badge
                               variant={
                                 booking.status === "CONFIRMED"
                                   ? "default"
                                   : booking.status === "PENDING"
-                                    ? "secondary"
-                                    : booking.status === "COMPLETED"
-                                      ? "outline"
-                                      : "destructive"
+                                  ? "secondary"
+                                  : booking.status === "COMPLETED"
+                                  ? "outline"
+                                  : "destructive"
                               }
                               className="text-xs"
                             >
@@ -331,7 +382,9 @@ export default function EnhancedDashboard() {
                             <div className="flex space-x-2">
                               <Button
                                 size="sm"
-                                onClick={() => handleBookingAction(booking.id, "confirm")}
+                                onClick={() =>
+                                  handleBookingAction(booking.id, "confirm")
+                                }
                                 className="h-8 w-8 p-0"
                               >
                                 <CheckCircle className="h-4 w-4" />
@@ -339,7 +392,9 @@ export default function EnhancedDashboard() {
                               <Button
                                 size="sm"
                                 variant="destructive"
-                                onClick={() => handleBookingAction(booking.id, "cancel")}
+                                onClick={() =>
+                                  handleBookingAction(booking.id, "cancel")
+                                }
                                 className="h-8 w-8 p-0"
                               >
                                 <XCircle className="h-4 w-4" />
@@ -352,7 +407,9 @@ export default function EnhancedDashboard() {
                   ) : (
                     <div className="text-center py-8">
                       <Clock className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                      <p className="text-muted-foreground">No recent bookings</p>
+                      <p className="text-muted-foreground">
+                        No recent bookings
+                      </p>
                     </div>
                   )}
                 </div>
@@ -364,7 +421,9 @@ export default function EnhancedDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>My Venues</CardTitle>
-                <CardDescription>Manage your sports venues and courts</CardDescription>
+                <CardDescription>
+                  Manage your sports venues and courts
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="text-center py-12">
@@ -385,7 +444,9 @@ export default function EnhancedDashboard() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Active Venues</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Active Venues
+                  </CardTitle>
                   <MapPin className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
@@ -398,23 +459,33 @@ export default function EnhancedDashboard() {
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">This Week</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    This Week
+                  </CardTitle>
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.weeklyBookings}</div>
+                  <div className="text-2xl font-bold">
+                    {stats.weeklyBookings || 0}
+                  </div>
                   <p className="text-xs text-muted-foreground">bookings</p>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Growth Rate</CardTitle>
+                  <CardTitle className="text-sm font-medium">
+                    Growth Rate
+                  </CardTitle>
                   <TrendingUp className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{stats.monthlyGrowth}%</div>
-                  <p className="text-xs text-muted-foreground">monthly growth</p>
+                  <div className="text-2xl font-bold">
+                    {stats.monthlyGrowth || 0}%
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    monthly growth
+                  </p>
                 </CardContent>
               </Card>
             </div>
@@ -422,5 +493,5 @@ export default function EnhancedDashboard() {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }

@@ -177,14 +177,16 @@ export default function HomePage() {
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-white text-white hover:bg-white hover:text-black px-8 py-4 text-lg bg-transparent"
-              >
-                Play Together
-                <Users className="ml-2 h-5 w-5" />
-              </Button>
+              <Link className="cursor-pointer" href={`/play-together`}>
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className=" border-white text-white hover:bg-white hover:text-black px-8 py-4 text-lg bg-transparent"
+                >
+                  Play Together
+                  <Users className="ml-2 h-5 w-5" />
+                </Button>
+              </Link>
             </motion.div>
           </motion.div>
 

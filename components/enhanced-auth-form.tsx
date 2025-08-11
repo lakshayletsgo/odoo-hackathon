@@ -1,68 +1,85 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { signIn, getSession } from "next-auth/react"
-import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Separator } from "@/components/ui/separator"
-import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from "lucide-react"
-import Link from "next/link"
-import { toast } from "sonner"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
+import { Eye, EyeOff, Lock, Mail, User } from "lucide-react";
+import { getSession, signIn } from "next-auth/react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 const signInSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
-})
+});
 
-const signUpSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Please enter a valid email address"),
-  password: z.string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Password must contain at least one uppercase letter, one lowercase letter, and one number"),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-})
+const signUpSchema = z
+  .object({
+    name: z.string().min(2, "Name must be at least 2 characters"),
+    email: z.string().email("Please enter a valid email address"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+        "Password must contain at least one uppercase letter, one lowercase letter, and one number"
+      ),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
-type SignInForm = z.infer<typeof signInSchema>
-type SignUpForm = z.infer<typeof signUpSchema>
+type SignInForm = z.infer<typeof signInSchema>;
+type SignUpForm = z.infer<typeof signUpSchema>;
 
 interface EnhancedAuthFormProps {
-  mode: "signin" | "signup"
-  title: string
-  description: string
-  redirectUrl?: string
+  mode: "signin" | "signup";
+  title: string;
+  description: string;
+  redirectUrl?: string;
 }
 
-export default function EnhancedAuthForm({ 
-  mode, 
-  title, 
+export default function EnhancedAuthForm({
+  mode,
+  title,
   description,
-  redirectUrl 
+  redirectUrl,
 }: EnhancedAuthFormProps) {
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   const signInForm = useForm<SignInForm>({
     resolver: zodResolver(signInSchema),
     defaultValues: {
       email: "",
       password: "",
-    }
-  })
+    },
+  });
 
   const signUpForm = useForm<SignUpForm>({
     resolver: zodResolver(signUpSchema),
@@ -71,50 +88,52 @@ export default function EnhancedAuthForm({
       email: "",
       password: "",
       confirmPassword: "",
-    }
-  })
+    },
+  });
 
   const onSignIn = async (data: SignInForm) => {
-    setIsLoading(true)
-    
+    setIsLoading(true);
+
     try {
       const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
         redirect: false,
-      })
+      });
 
       if (result?.error) {
         toast.error("Sign in failed", {
           description: "Invalid email or password. Please try again.",
-        })
+        });
       } else {
-        const session = await getSession()
+        const session = await getSession();
         toast.success("Welcome back!", {
           description: "You have been signed in successfully.",
-        })
-        
+        });
+
         if (redirectUrl) {
-          router.push(redirectUrl)
+          router.push(redirectUrl);
         } else if (session?.user?.role === "ADMIN") {
-          router.push("/admin")
+          router.push("/admin");
+        } else if (session?.user?.role === "ADMIN") {
+          router.push("/admin");
         } else if (session?.user?.role === "OWNER") {
-          router.push("/owner/dashboard")
+          router.push("/owner/dashboard");
         } else {
-          router.push("/dashboard")
+          router.push("/dashboard");
         }
       }
     } catch (error) {
       toast.error("Something went wrong", {
         description: "Please try again later.",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const onSignUp = async (data: SignUpForm) => {
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
       const response = await fetch("/api/auth/signup", {
@@ -127,27 +146,27 @@ export default function EnhancedAuthForm({
           email: data.email,
           password: data.password,
         }),
-      })
+      });
 
       if (response.ok) {
         toast.success("Account created!", {
           description: "Please check your email to verify your account.",
-        })
-        router.push("/auth/verify-otp")
+        });
+        router.push("/auth/verify-otp");
       } else {
-        const error = await response.json()
+        const error = await response.json();
         toast.error("Sign up failed", {
           description: error.message || "Please try again later.",
-        })
+        });
       }
     } catch (error) {
       toast.error("Something went wrong", {
         description: "Please try again later.",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
@@ -170,11 +189,14 @@ export default function EnhancedAuthForm({
             <CardTitle className="text-2xl font-bold">{title}</CardTitle>
             <CardDescription>{description}</CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-6">
             {mode === "signin" ? (
               <Form {...signInForm}>
-                <form onSubmit={signInForm.handleSubmit(onSignIn)} className="space-y-4">
+                <form
+                  onSubmit={signInForm.handleSubmit(onSignIn)}
+                  className="space-y-4"
+                >
                   <FormField
                     control={signInForm.control}
                     name="email"
@@ -217,7 +239,11 @@ export default function EnhancedAuthForm({
                               onClick={() => setShowPassword(!showPassword)}
                               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             >
-                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
                             </button>
                           </div>
                         </FormControl>
@@ -227,17 +253,17 @@ export default function EnhancedAuthForm({
                   />
 
                   <div className="flex items-center justify-between">
-                    <Link 
-                      href="/auth/forgot-password" 
+                    <Link
+                      href="/auth/forgot-password"
                       className="text-sm text-primary hover:text-primary/80 transition-colors"
                     >
                       Forgot password?
                     </Link>
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
+                  <Button
+                    type="submit"
+                    className="w-full"
                     disabled={isLoading}
                     size="lg"
                   >
@@ -247,7 +273,10 @@ export default function EnhancedAuthForm({
               </Form>
             ) : (
               <Form {...signUpForm}>
-                <form onSubmit={signUpForm.handleSubmit(onSignUp)} className="space-y-4">
+                <form
+                  onSubmit={signUpForm.handleSubmit(onSignUp)}
+                  className="space-y-4"
+                >
                   <FormField
                     control={signUpForm.control}
                     name="name"
@@ -311,7 +340,11 @@ export default function EnhancedAuthForm({
                               onClick={() => setShowPassword(!showPassword)}
                               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             >
-                              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
                             </button>
                           </div>
                         </FormControl>
@@ -337,10 +370,16 @@ export default function EnhancedAuthForm({
                             />
                             <button
                               type="button"
-                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              onClick={() =>
+                                setShowConfirmPassword(!showConfirmPassword)
+                              }
                               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
                             >
-                              {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              {showConfirmPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
                             </button>
                           </div>
                         </FormControl>
@@ -349,9 +388,9 @@ export default function EnhancedAuthForm({
                     )}
                   />
 
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
+                  <Button
+                    type="submit"
+                    className="w-full"
                     disabled={isLoading}
                     size="lg"
                   >
@@ -365,9 +404,11 @@ export default function EnhancedAuthForm({
 
             <div className="text-center">
               <p className="text-sm text-muted-foreground">
-                {mode === "signin" ? "Don't have an account? " : "Already have an account? "}
-                <Link 
-                  href={mode === "signin" ? "/auth/signup" : "/auth/signin"} 
+                {mode === "signin"
+                  ? "Don't have an account? "
+                  : "Already have an account? "}
+                <Link
+                  href={mode === "signin" ? "/auth/signup" : "/auth/signin"}
                   className="font-medium text-primary hover:text-primary/80 transition-colors"
                 >
                   {mode === "signin" ? "Sign up" : "Sign in"}
@@ -377,8 +418,8 @@ export default function EnhancedAuthForm({
 
             {mode === "signin" && (
               <div className="text-center">
-                <Link 
-                  href="/demo" 
+                <Link
+                  href="/demo"
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Try Demo Account
@@ -389,5 +430,5 @@ export default function EnhancedAuthForm({
         </Card>
       </motion.div>
     </div>
-  )
+  );
 }
