@@ -1,22 +1,16 @@
 import { sendOTPEmail } from "@/lib/email";
 import { prisma } from "@/lib/prisma";
 import { generateOTP } from "@/lib/utils";
+import { signUpSchema } from "@/lib/validations/auth";
 import bcrypt from "bcryptjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
-const signUpSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  phone: z.string().min(10),
-  password: z.string().min(6),
-  role: z.enum(["USER", "OWNER", "ADMIN"]),
-});
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, phone, password, role } = signUpSchema.parse(body);
+    const { name, email, phone, password, role, profilePicture } =
+      signUpSchema.parse(body);
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
@@ -33,6 +27,9 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 12);
 
+    // Profile picture URL is already uploaded via /api/upload endpoint
+    let profilePictureUrl = profilePicture || null;
+
     // Create user
     const user = await prisma.user.create({
       data: {
@@ -41,7 +38,9 @@ export async function POST(request: NextRequest) {
         phone,
         password: hashedPassword,
         role,
+        image: profilePictureUrl,
         isVerified: false,
+        isBanned: false,
       },
     });
 

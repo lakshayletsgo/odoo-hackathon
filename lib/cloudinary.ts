@@ -1,32 +1,30 @@
-import { v2 as cloudinary } from "cloudinary"
+import { v2 as cloudinary } from "cloudinary";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
-})
+});
 
-export async function uploadImage(file: File): Promise<string> {
-  const bytes = await file.arrayBuffer()
-  const buffer = Buffer.from(bytes)
+export const uploadToCloudinary = async (fileData: string): Promise<string> => {
+  try {
+    const result = await cloudinary.uploader.upload(fileData, {
+      folder: "profile-pictures",
+      transformation: [
+        { width: 300, height: 300, crop: "fill" },
+        { quality: "auto" },
+        { format: "webp" },
+      ],
+    });
 
-  return new Promise((resolve, reject) => {
-    cloudinary.uploader
-      .upload_stream(
-        {
-          resource_type: "image",
-          folder: "quickcourt",
-        },
-        (error, result) => {
-          if (error) {
-            reject(error)
-          } else {
-            resolve(result!.secure_url)
-          }
-        },
-      )
-      .end(buffer)
-  })
-}
+    return result.secure_url;
+  } catch (error) {
+    console.error("Cloudinary upload error:", error);
+    throw new Error("Failed to upload image");
+  }
+};
 
-export { cloudinary }
+// Legacy function for backward compatibility
+export const uploadImage = uploadToCloudinary;
+export { cloudinary };
+export default cloudinary;

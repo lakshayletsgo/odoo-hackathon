@@ -127,7 +127,7 @@ export default function DemoPage() {
                 </Button>
               </Link>
               <Link href="/auth/signup">
-                <Button className="bg-yellow-400 text-black hover:bg-yellow-500">Sign Up</Button>
+                <Button className="bg-primary text-primary-foreground hover:opacity-90">Sign Up</Button>
               </Link>
             </div>
           </div>
@@ -163,10 +163,10 @@ export default function DemoPage() {
             {demoAccounts.map((account, index) => (
               <Card key={account.role} className="bg-white/90 backdrop-blur-sm">
                 <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    {account.role === "USER" && <User className="h-8 w-8 text-cyan-600" />}
-                    {account.role === "OWNER" && <Building className="h-8 w-8 text-cyan-600" />}
-                    {account.role === "ADMIN" && <Shield className="h-8 w-8 text-cyan-600" />}
+                  <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4 text-secondary-foreground">
+                    {account.role === "USER" && <User className="h-8 w-8" />}
+                    {account.role === "OWNER" && <Building className="h-8 w-8" />}
+                    {account.role === "ADMIN" && <Shield className="h-8 w-8" />}
                   </div>
                   <CardTitle className="text-xl">{account.name}</CardTitle>
                   <CardDescription>{account.description}</CardDescription>
@@ -189,7 +189,7 @@ export default function DemoPage() {
                     <ul className="text-sm text-gray-600 space-y-1">
                       {account.features.map((feature, idx) => (
                         <li key={idx} className="flex items-center">
-                          <div className="w-1.5 h-1.5 bg-cyan-600 rounded-full mr-2"></div>
+                          <div className="w-1.5 h-1.5 bg-primary rounded-full mr-2"></div>
                           {feature}
                         </li>
                       ))}
@@ -199,7 +199,7 @@ export default function DemoPage() {
                   <Button
                     onClick={() => handleQuickLogin(account.email, account.password)}
                     disabled={isLoading === "login"}
-                    className="w-full bg-cyan-600 hover:bg-cyan-700"
+                    className="w-full bg-primary text-primary-foreground hover:opacity-90"
                   >
                     {isLoading === "login" ? "Logging in..." : "Quick Login"}
                   </Button>
@@ -221,8 +221,8 @@ export default function DemoPage() {
             {demoActions.map((action, index) => (
               <Card key={action.action} className="bg-white/90 backdrop-blur-sm">
                 <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <action.icon className="h-8 w-8 text-yellow-600" />
+                  <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4 text-secondary-foreground">
+                    <action.icon className="h-8 w-8" />
                   </div>
                   <CardTitle className="text-lg">{action.title}</CardTitle>
                   <CardDescription>{action.description}</CardDescription>
@@ -231,7 +231,7 @@ export default function DemoPage() {
                   <Button
                     onClick={() => handleDemoAction(action.action)}
                     disabled={isLoading === action.action}
-                    className="w-full bg-yellow-400 text-black hover:bg-yellow-500"
+                    className="w-full bg-primary text-primary-foreground hover:opacity-90"
                   >
                     {isLoading === action.action ? "Processing..." : "Run Action"}
                   </Button>
@@ -247,28 +247,28 @@ export default function DemoPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="bg-white/90 backdrop-blur-sm">
               <CardContent className="p-6 text-center">
-                <Building className="h-12 w-12 text-cyan-600 mx-auto mb-4" />
+                <Building className="h-12 w-12 text-primary mx-auto mb-4" />
                 <h3 className="text-2xl font-bold text-gray-900">12</h3>
                 <p className="text-gray-600">Demo Venues</p>
               </CardContent>
             </Card>
             <Card className="bg-white/90 backdrop-blur-sm">
               <CardContent className="p-6 text-center">
-                <MapPin className="h-12 w-12 text-green-600 mx-auto mb-4" />
+                <MapPin className="h-12 w-12 text-secondary mx-auto mb-4" />
                 <h3 className="text-2xl font-bold text-gray-900">48</h3>
                 <p className="text-gray-600">Sports Courts</p>
               </CardContent>
             </Card>
             <Card className="bg-white/90 backdrop-blur-sm">
               <CardContent className="p-6 text-center">
-                <Calendar className="h-12 w-12 text-blue-600 mx-auto mb-4" />
+                <Calendar className="h-12 w-12 text-primary mx-auto mb-4" />
                 <h3 className="text-2xl font-bold text-gray-900">156</h3>
                 <p className="text-gray-600">Sample Bookings</p>
               </CardContent>
             </Card>
             <Card className="bg-white/90 backdrop-blur-sm">
               <CardContent className="p-6 text-center">
-                <User className="h-12 w-12 text-purple-600 mx-auto mb-4" />
+                <User className="h-12 w-12 text-secondary mx-auto mb-4" />
                 <h3 className="text-2xl font-bold text-gray-900">89</h3>
                 <p className="text-gray-600">Demo Users</p>
               </CardContent>
@@ -293,9 +293,7 @@ export default function DemoPage() {
             <CardContent className="space-y-4">
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link href="/auth/signup">
-                  <Button size="lg" className="bg-cyan-600 hover:bg-cyan-700">
-                    Create Real Account
-                  </Button>
+                  <Button size="lg" className="bg-primary text-primary-foreground hover:opacity-90">Create Real Account</Button>
                 </Link>
                 <Link href="/search">
                   <Button size="lg" variant="outline">

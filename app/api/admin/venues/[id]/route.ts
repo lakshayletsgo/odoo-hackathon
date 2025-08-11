@@ -4,7 +4,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 
 const venueActionSchema = z.object({
-  action: z.enum(["approve", "reject"]),
+  action: z.string().refine((val) => ["approve", "reject"].includes(val), {
+    message: "Invalid action",
+  }),
   comments: z.string().optional(),
 });
 
@@ -27,9 +29,6 @@ export async function PUT(
       data: {
         isApproved: action === "approve",
         isActive: action === "approve",
-        adminComments: comments,
-        approvedAt: action === "approve" ? new Date() : null,
-        approvedBy: session.user.id,
       },
       include: {
         owner: { select: { name: true, email: true } },

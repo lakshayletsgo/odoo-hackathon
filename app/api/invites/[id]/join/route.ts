@@ -6,7 +6,7 @@ import { z } from "zod";
 const joinInviteSchema = z.object({
   joinerName: z.string().min(1, "Name is required"),
   contactDetails: z.string().min(1, "Contact details are required"),
-  playersCount: z.number().min(1, "At least 1 player is required"),
+  playersCount: z.number().min(1, "Players count must be at least 1"),
 });
 
 export async function POST(
@@ -15,86 +15,65 @@ export async function POST(
 ) {
   try {
     const session = await auth();
-    if (!session?.user?.id || (session.user as any)?.isBanned) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if user is banned
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isBanned: true },
+    });
+
+    if (user?.isBanned) {
+      return NextResponse.json({ error: "User is banned" }, { status: 403 });
     }
 
     const body = await request.json();
     const validatedData = joinInviteSchema.parse(body);
     const inviteId = params.id;
 
-    // Get the invite and check if it exists and is active
+    // Find the invite
     const invite = await prisma.invite.findUnique({
       where: { id: inviteId },
-      include: {
-        requests: {
-          where: {
-            status: "ACCEPTED",
-          },
-        },
-      },
     });
 
     if (!invite) {
       return NextResponse.json({ error: "Invite not found" }, { status: 404 });
     }
 
-    if (invite.status !== "ACTIVE") {
+    const playersLeft = invite.playersRequired - invite.playersJoined;
+    if (playersLeft < validatedData.playersCount) {
       return NextResponse.json(
-        { error: "This invite is no longer active" },
+        { error: "Not enough spots available" },
         { status: 400 }
       );
     }
 
-    // Check if there are enough spots available
-    const currentPlayersJoined = invite.requests.reduce(
-      (sum: number, req: { playersCount: number }) => sum + req.playersCount,
-      0
-    );
-    const availableSpots = invite.playersRequired - currentPlayersJoined;
-
-    if (validatedData.playersCount > availableSpots) {
-      return NextResponse.json(
-        {
-          error: `Only ${availableSpots} spots available`,
-        },
-        { status: 400 }
-      );
-    }
-
-    // Create the join request
+    // Create join request
     const joinRequest = await prisma.joinRequest.create({
       data: {
-        ...validatedData,
-        inviteId,
-      },
-      include: {
-        invite: {
-          include: {
-            creator: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-          },
-        },
+        inviteId: inviteId,
+        joinerName: validatedData.joinerName,
+        contactDetails: validatedData.contactDetails,
+        playersCount: validatedData.playersCount,
+        status: "PENDING",
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      message: "Join request sent successfully",
-      request: joinRequest,
-    });
+    return NextResponse.json(joinRequest, { status: 201 });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
-    }
     console.error("Error joining invite:", error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid data", details: error.errors },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to join invite" },
       { status: 500 }
     );
   }

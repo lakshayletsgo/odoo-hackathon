@@ -113,7 +113,7 @@ export default function HomePage() {
           <motion.div
             animate={{ y: [0, -20, 0] }}
             transition={{ duration: 3, repeat: Number.POSITIVE_INFINITY }}
-            className="absolute bottom-40 left-20 w-16 h-16 bg-yellow-400 rounded-full opacity-30"
+            className="absolute bottom-40 left-20 w-16 h-16 bg-primary rounded-full opacity-30"
           ></motion.div>
         </div>
 
@@ -172,20 +172,20 @@ export default function HomePage() {
               transition={{ delay: 0.8 }}
               className="flex flex-col sm:flex-row gap-4"
             >
-              <Link href="/search">
+              <Link href="/search " className="z-10 ">
                 <Button
                   size="lg"
-                  className="bg-yellow-400 text-black hover:bg-yellow-500 px-8 py-4 text-lg"
+                  className="bg-primary text-primary-foreground hover:opacity-90 px-8 py-4 text-lg"
                 >
                   Book a Court
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
               </Link>
-              <Link className="cursor-pointer" href={`/play-together`}>
+              <Link href="/play-together" className="z-10">
                 <Button
                   size="lg"
                   variant="outline"
-                  className=" border-white text-white hover:bg-white hover:text-black px-8 py-4 text-lg bg-transparent"
+                  className="border-white text-white hover:bg-white hover:text-black px-8 py-4 text-lg bg-transparent"
                 >
                   Play Together
                   <Users className="ml-2 h-5 w-5" />
@@ -214,7 +214,7 @@ export default function HomePage() {
               <motion.div
                 animate={{ y: [0, -10, 0] }}
                 transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                className="absolute top-10 right-10 bg-yellow-400 p-3 rounded-full shadow-lg"
+                className="absolute top-10 right-10 bg-primary p-3 rounded-full shadow-lg"
               >
                 <Trophy className="h-6 w-6 text-black" />
               </motion.div>
@@ -266,7 +266,7 @@ export default function HomePage() {
                 </div>
                 <Button
                   size="lg"
-                  className="bg-cyan-600 hover:bg-cyan-700 px-8 h-12"
+                  className="bg-primary hover:opacity-90 px-8 h-12 text-primary-foreground"
                 >
                   Search Courts
                 </Button>
@@ -349,7 +349,7 @@ export default function HomePage() {
                           <p className="text-sm text-gray-500">per hour</p>
                         </div>
                       </div>
-                      <Button className="w-full bg-cyan-600 hover:bg-cyan-700">
+                      <Button className="w-full bg-primary text-primary-foreground hover:opacity-90">
                         View Courts
                       </Button>
                     </div>
@@ -369,7 +369,7 @@ export default function HomePage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-cyan-600 text-cyan-600 hover:bg-cyan-600 hover:text-white bg-transparent"
+                className="border-primary text-primary hover:bg-primary hover:text-primary-foreground bg-transparent"
               >
                 View All Venues
                 <ArrowRight className="ml-2 h-5 w-5" />
@@ -426,7 +426,7 @@ export default function HomePage() {
                 transition={{ delay: index * 0.2 }}
                 className="text-center space-y-4"
               >
-                <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto">
+                <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto text-secondary-foreground">
                   <step.icon className="h-8 w-8 text-cyan-600" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-900">
@@ -459,7 +459,7 @@ export default function HomePage() {
               <Link href="/search">
                 <Button
                   size="lg"
-                  className="bg-yellow-400 text-black hover:bg-yellow-500 px-8 py-4 text-lg"
+                  className="bg-primary text-primary-foreground hover:opacity-90 px-8 py-4 text-lg"
                 >
                   Book a Court
                   <ArrowRight className="ml-2 h-5 w-5" />

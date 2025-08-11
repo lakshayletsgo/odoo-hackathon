@@ -90,12 +90,12 @@ export function Navigation() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={session?.user?.image || ""} />
-            <AvatarFallback className="bg-cyan-500 text-white">
-              {getInitials(session?.user?.name || "U")}
-            </AvatarFallback>
-          </Avatar>
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={session?.user?.image || ""} />
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {getInitials(session?.user?.name || "U")}
+              </AvatarFallback>
+            </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -144,10 +144,10 @@ export function Navigation() {
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
                 <Building2 className="h-5 w-5 text-white" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+              <span className="text-xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
                 QuickCourt
               </span>
             </Link>

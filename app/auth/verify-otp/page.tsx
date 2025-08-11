@@ -97,7 +97,7 @@ export default function VerifyOTPPage() {
 
   if (!email) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cyan-600 via-teal-600 to-blue-700 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md">
           <CardContent className="p-6 text-center">
             <p>Invalid verification link. Please try signing up again.</p>
@@ -108,7 +108,7 @@ export default function VerifyOTPPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cyan-600 via-teal-600 to-blue-700 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -117,8 +117,8 @@ export default function VerifyOTPPage() {
       >
         <Card className="shadow-2xl">
           <CardHeader className="space-y-1 text-center">
-            <div className="w-16 h-16 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield className="h-8 w-8 text-cyan-600" />
+            <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4 text-secondary-foreground">
+              <Shield className="h-8 w-8" />
             </div>
             <CardTitle className="text-2xl font-bold">Verify Your Email</CardTitle>
             <CardDescription>We've sent a 6-digit code to {email}</CardDescription>
@@ -152,7 +152,7 @@ export default function VerifyOTPPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-cyan-600 hover:bg-cyan-700"
+                className="w-full bg-primary text-primary-foreground hover:opacity-90"
                 disabled={isLoading || otp.length !== 6}
               >
                 {isLoading ? "Verifying..." : "Verify Email"}
@@ -165,7 +165,7 @@ export default function VerifyOTPPage() {
                 variant="ghost"
                 onClick={handleResendOTP}
                 disabled={!canResend || isLoading}
-                className="text-cyan-600 hover:text-cyan-700"
+                className="text-primary hover:opacity-90"
               >
                 {canResend ? "Resend Code" : `Resend in ${countdown}s`}
               </Button>

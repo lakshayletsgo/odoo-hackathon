@@ -1,31 +1,33 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 
-const createInviteSchema = z.object({
-  name: z.string().min(1, "Name is required"),
-  venue: z.string().min(1, "Venue is required"),
-  date: z.string().transform((str) => new Date(str)),
-  time: z
-    .string()
-    .regex(/^([01]?[0-9]|2[0-3]):[0-5][0-9]$/, "Invalid time format"),
-  sport: z.enum([
-    "TENNIS",
-    "BASKETBALL",
-    "FOOTBALL",
-    "BADMINTON",
-    "VOLLEYBALL",
-    "SQUASH",
-    "CRICKET",
-    "SOCCER",
-  ]),
-  playersRequired: z
-    .number()
-    .min(1, "At least 1 player is required")
-    .max(50, "Maximum 50 players allowed"),
-  contactDetails: z.string().min(1, "Contact details are required"),
-});
+// Function to validate and normalize sport values
+function validateSport(sportValue: string): string {
+  // Normalize the sport value to match our constants
+  const normalizedSport = sportValue.trim();
+
+  // List of valid sports from our constants
+  const validSports = [
+    "Swimming",
+    "Tennis",
+    "Cricket",
+    "Football",
+    "Volleyball",
+    "Basketball",
+    "Pickleball",
+    "Badminton",
+    "Table Tennis",
+  ];
+
+  // Check if the sport exists in our valid list (case-insensitive)
+  const foundSport = validSports.find(
+    (sport) => sport.toLowerCase() === normalizedSport.toLowerCase()
+  );
+
+  // Return the properly formatted sport or default to Tennis
+  return foundSport || "Tennis";
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,20 +37,20 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const validatedData = createInviteSchema.parse(body);
-
-    // Check if the date is in the future
-    if (validatedData.date < new Date()) {
-      return NextResponse.json(
-        { error: "Date must be in the future" },
-        { status: 400 }
-      );
-    }
 
     const invite = await prisma.invite.create({
       data: {
-        ...validatedData,
+        name: body.name,
+        venue: body.venue,
+        date: new Date(body.date),
+        time: body.time,
+        sport: validateSport(body.sport),
+        playersRequired: body.playersRequired,
+        contactDetails: body.contactDetails,
         creatorId: session.user.id,
+        playersJoined: 0,
+        playersLeft: body.playersRequired,
+        status: "OPEN",
       },
       include: {
         creator: {
@@ -61,61 +63,22 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      message: "Invite created successfully",
-      invite,
-    });
+    return NextResponse.json(invite);
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
-    }
     console.error("Error creating invite:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to create invite" },
       { status: 500 }
     );
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url);
-    const venue = searchParams.get("venue");
-    const sport = searchParams.get("sport");
-    const date = searchParams.get("date");
-
-    const where: any = {
-      status: "ACTIVE",
-      date: {
-        gte: new Date(),
-      },
-    };
-
-    if (venue) {
-      where.venue = {
-        contains: venue,
-        mode: "insensitive",
-      };
-    }
-
-    if (sport) {
-      where.sport = sport;
-    }
-
-    if (date) {
-      const selectedDate = new Date(date);
-      const nextDay = new Date(selectedDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-
-      where.date = {
-        gte: selectedDate,
-        lt: nextDay,
-      };
-    }
-
     const invites = await prisma.invite.findMany({
-      where,
+      where: {
+        status: "OPEN",
+      },
       include: {
         creator: {
           select: {
@@ -124,32 +87,17 @@ export async function GET(request: NextRequest) {
             email: true,
           },
         },
-        _count: {
-          select: {
-            requests: {
-              where: {
-                status: "ACCEPTED",
-              },
-            },
-          },
-        },
       },
-      orderBy: [{ date: "asc" }, { time: "asc" }],
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
-    // Calculate players still required
-    const invitesWithPlayersLeft = invites.map(
-      (invite: { playersRequired: number; playersJoined: number } & Record<string, any>) => ({
-      ...invite,
-      playersLeft: invite.playersRequired - invite.playersJoined,
-      })
-    );
-
-    return NextResponse.json({ invites: invitesWithPlayersLeft });
+    return NextResponse.json(invites);
   } catch (error) {
     console.error("Error fetching invites:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to fetch invites" },
       { status: 500 }
     );
   }

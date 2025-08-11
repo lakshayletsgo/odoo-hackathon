@@ -124,9 +124,9 @@ export default function EnhancedDashboard() {
       case "CONFIRMED":
         return "bg-green-500";
       case "PENDING":
-        return "bg-yellow-500";
+        return "bg-secondary";
       case "COMPLETED":
-        return "bg-blue-500";
+        return "bg-primary";
       case "CANCELLED":
         return "bg-red-500";
       default:

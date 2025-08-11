@@ -1,6 +1,7 @@
 "use client";
 
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -20,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Lock, Mail, Phone, User } from "lucide-react";
+import { Camera, Eye, EyeOff, Lock, Mail, Phone, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -34,7 +35,10 @@ const signUpSchema = z
     phone: z.string().min(10, "Please enter a valid phone number"),
     password: z.string().min(6, "Password must be at least 6 characters"),
     confirmPassword: z.string(),
-    role: z.enum(["USER", "OWNER", "ADMIN"]),
+    role: z.string().refine((val) => ["USER", "OWNER", "ADMIN"].includes(val), {
+      message: "Invalid role",
+    }),
+    profilePicture: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -49,6 +53,8 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [step, setStep] = useState(1);
+  const [profilePicture, setProfilePicture] = useState<string>("");
+  const [uploadingImage, setUploadingImage] = useState(false);
   const router = useRouter();
 
   const {
@@ -61,10 +67,41 @@ export default function SignUpPage() {
     resolver: zodResolver(signUpSchema),
     defaultValues: {
       role: "USER",
+      profilePicture: "",
     },
   });
 
   const watchedRole = watch("role");
+
+  const handleImageUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || "Upload failed");
+      }
+
+      setProfilePicture(result.url);
+      setValue("profilePicture", result.url);
+    } catch (error: any) {
+      setError(error.message);
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const onSubmit = async (data: SignUpForm) => {
     setIsLoading(true);
@@ -117,6 +154,34 @@ export default function SignUpPage() {
             )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {/* Profile Picture Upload */}
+              <div className="space-y-2">
+                <Label htmlFor="profilePicture">Profile Picture</Label>
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-16 w-16">
+                    <AvatarImage src={profilePicture} />
+                    <AvatarFallback>
+                      <Camera className="h-6 w-6 text-gray-400" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1">
+                    <Input
+                      id="profilePicture"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImage}
+                      className="cursor-pointer"
+                    />
+                    {uploadingImage && (
+                      <p className="text-sm text-blue-600 mt-1">
+                        Uploading image...
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="role">Account Type</Label>
                 <Select
@@ -253,7 +318,7 @@ export default function SignUpPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-cyan-600 hover:bg-cyan-700"
+                className="w-full bg-primary text-primary-foreground hover:opacity-90"
                 disabled={isLoading}
               >
                 {isLoading ? "Creating Account..." : "Create Account"}

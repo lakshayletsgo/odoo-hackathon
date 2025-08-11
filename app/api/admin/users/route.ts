@@ -4,7 +4,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 
 const userActionSchema = z.object({
-  action: z.enum(["ban", "unban"]),
+  action: z.string().refine((val) => ["ban", "unban"].includes(val), {
+    message: "Invalid action",
+  }),
   reason: z.string().optional(),
 });
 
@@ -23,7 +25,7 @@ export async function GET(request: NextRequest) {
 
     const users = await prisma.user.findMany({
       where: {
-        ...(role && { role: role.toUpperCase() as any }),
+        ...(role && { role: role }),
         ...(status === "banned" && { isBanned: true }),
         ...(status === "active" && { isBanned: false }),
         ...(search && {
@@ -83,9 +85,6 @@ export async function PUT(request: NextRequest) {
       where: { id: userId },
       data: {
         isBanned: action === "ban",
-        banReason: action === "ban" ? reason : null,
-        bannedAt: action === "ban" ? new Date() : null,
-        bannedBy: action === "ban" ? session.user.id : null,
       },
     });
 

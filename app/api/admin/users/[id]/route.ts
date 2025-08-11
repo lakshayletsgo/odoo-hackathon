@@ -4,7 +4,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 
 const userActionSchema = z.object({
-  action: z.enum(["ban", "unban"]),
+  action: z.string().refine((val) => ["ban", "unban"].includes(val), {
+    message: "Invalid action",
+  }),
   reason: z.string().optional(),
 });
 
@@ -26,9 +28,6 @@ export async function PUT(
       where: { id: params.id },
       data: {
         isBanned: action === "ban",
-        banReason: action === "ban" ? reason : null,
-        bannedAt: action === "ban" ? new Date() : null,
-        bannedBy: action === "ban" ? session.user.id : null,
       },
     });
 

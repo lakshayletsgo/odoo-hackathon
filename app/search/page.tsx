@@ -109,15 +109,19 @@ export default function SearchPage() {
 
   useEffect(() => {
     // Filter and sort venues based on current filters
+    const normalizedSearch = searchQuery.trim().toLowerCase();
+    const normalizedLocation = location.trim().toLowerCase();
+
     const filteredVenues = mockVenues.filter((venue) => {
       const matchesSearch =
-        venue.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        venue.sports.some((sport) =>
-          sport.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+        normalizedSearch === "" ||
+        venue.name.toLowerCase().includes(normalizedSearch) ||
+        venue.sports.some((sport) => sport.toLowerCase().includes(normalizedSearch));
+
       const matchesLocation =
-        location === "" ||
-        venue.city.toLowerCase().includes(location.toLowerCase());
+        normalizedLocation === "" ||
+        venue.city.toLowerCase().includes(normalizedLocation) ||
+        venue.address.toLowerCase().includes(normalizedLocation);
       const matchesSport =
         selectedSport === "All Sports" || venue.sports.includes(selectedSport);
       const matchesPrice =
@@ -154,7 +158,7 @@ export default function SearchPage() {
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-cyan-600">
+            <Link href="/" className="text-2xl font-bold text-primary">
               QuickCourt
             </Link>
             <div className="flex items-center space-x-4">
@@ -162,7 +166,7 @@ export default function SearchPage() {
                 <Button variant="ghost">Sign In</Button>
               </Link>
               <Link href="/auth/signup">
-                <Button className="bg-cyan-600 hover:bg-cyan-700">
+                <Button className="bg-primary text-primary-foreground hover:opacity-90">
                   Sign Up
                 </Button>
               </Link>
@@ -389,7 +393,7 @@ export default function SearchPage() {
 
                       <div className="flex space-x-2">
                         <Link href={`/venues/${venue.id}`} className="flex-1">
-                          <Button className="w-full bg-cyan-600 hover:bg-cyan-700">
+                          <Button className="w-full bg-primary text-primary-foreground hover:opacity-90">
                             View Courts
                           </Button>
                         </Link>
