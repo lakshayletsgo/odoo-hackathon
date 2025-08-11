@@ -74,16 +74,16 @@ export default function HomePage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
-                className="text-5xl lg:text-7xl font-bold leading-tight"
+                className="text-5xl lg:text-7xl font-bold leading-tight drop-shadow-md"
               >
                 Book Your
-                <span className="block text-primary">Sports Court</span>
+                <span className="block text-primary drop-shadow-lg">Sports Court</span>
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4 }}
-                className="text-xl lg:text-2xl text-cyan-100 max-w-lg"
+                className="text-xl lg:text-2xl text-white/95 max-w-lg leading-relaxed"
               >
                 Anytime, anywhere—get ready to play! Book your favorite sports
                 courts instantly and join the game.
@@ -101,7 +101,7 @@ export default function HomePage() {
                 <Badge
                   key={sport.name}
                   variant="secondary"
-                  className="bg-white/20 text-white border-white/30 hover:bg-white/30 transition-colors text-sm px-3 py-1"
+                  className="bg-white/90 text-slate-800 border-white hover:bg-white transition-colors text-sm px-3 py-1 font-medium"
                 >
                   {sport.icon} {sport.name}
                 </Badge>
@@ -182,33 +182,33 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="text-center space-y-8"
           >
-            <h2 className="text-4xl font-bold text-gray-900">
+            <h2 className="text-4xl font-bold text-slate-900">
               Find Your Game Anytime
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-700 max-w-2xl mx-auto leading-relaxed">
               Discover courts in your area. Whether you're into tennis,
               basketball, badminton, or any other sport, we've got you covered.
             </p>
 
             {/* Search Bar */}
-            <div className="bg-gray-50 p-8 rounded-2xl shadow-lg">
+            <div className="bg-slate-50 p-8 rounded-2xl shadow-lg border border-slate-200">
               <div className="flex flex-col md:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 h-5 w-5" />
                   <Input
                     placeholder="Enter location..."
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                    className="pl-10 h-12 text-lg"
+                    className="pl-10 h-12 text-lg border-slate-300 focus:border-primary text-slate-900 placeholder:text-slate-500"
                   />
                 </div>
                 <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-500 h-5 w-5" />
                   <Input
                     placeholder="Search sports..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 h-12 text-lg"
+                    className="pl-10 h-12 text-lg border-slate-300 focus:border-primary text-slate-900 placeholder:text-slate-500"
                     onKeyPress={(e) => {
                       if (e.key === "Enter") {
                         handleSearch();
@@ -218,7 +218,7 @@ export default function HomePage() {
                 </div>
                 <Button
                   size="lg"
-                  className="bg-primary hover:opacity-90 px-8 h-12 text-primary-foreground"
+                  className="bg-primary hover:bg-primary/90 px-8 h-12 text-primary-foreground font-semibold shadow-md"
                   onClick={handleSearch}
                 >
                   Search Courts
@@ -238,10 +238,10 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="text-center space-y-8"
           >
-            <h2 className="text-4xl font-bold text-gray-900">
+            <h2 className="text-4xl font-bold text-slate-900">
               Choose Your Sport
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-700 max-w-2xl mx-auto leading-relaxed">
               Select your favorite sport and discover courts near you. Click on
               any sport to start exploring!
             </p>
@@ -266,10 +266,10 @@ export default function HomePage() {
                     >
                       {sport.icon}
                     </div>
-                    <h3 className="font-semibold text-gray-900 group-hover:text-primary transition-colors">
+                    <h3 className="font-semibold text-slate-900 group-hover:text-primary transition-colors">
                       {sport.name}
                     </h3>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-slate-600 mt-1">
                       Find courts near you
                     </p>
                   </div>
@@ -304,10 +304,10 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="text-center space-y-4 mb-12"
           >
-            <h2 className="text-4xl font-bold text-gray-900">
+            <h2 className="text-4xl font-bold text-slate-900">
               Why Choose Our Platform?
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-slate-700 max-w-2xl mx-auto leading-relaxed">
               We make it easy to find and book sports venues with just a few
               clicks
             </p>
@@ -342,8 +342,8 @@ export default function HomePage() {
                 <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-primary">
                   {feature.icon}
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
-                <p className="text-gray-600">{feature.description}</p>
+                <h3 className="text-xl font-semibold mb-2 text-slate-900">{feature.title}</h3>
+                <p className="text-slate-700">{feature.description}</p>
               </motion.div>
             ))}
           </div>
@@ -359,13 +359,13 @@ export default function HomePage() {
             viewport={{ once: true }}
             className="space-y-6"
           >
-            <h2 className="text-4xl font-bold text-black">Ready to Play?</h2>
-            <p className="text-xl text-black/80">
+            <h2 className="text-4xl font-bold text-white drop-shadow-md">Ready to Play?</h2>
+            <p className="text-xl text-white/95 leading-relaxed">
               Join thousands of players who book their courts with us
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/search">
-                <Button size="lg" variant="secondary" className="px-8 py-3">
+                <Button size="lg" variant="secondary" className="px-8 py-3 bg-white text-slate-900 hover:bg-white/90 font-semibold shadow-lg">
                   Book a Court
                 </Button>
               </Link>
@@ -373,7 +373,7 @@ export default function HomePage() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="px-8 py-3 border-black text-black hover:bg-black hover:text-white"
+                  className="px-8 py-3 border-2 border-white text-white hover:bg-white hover:text-slate-900 font-semibold transition-all duration-200"
                 >
                   Sign Up Free
                 </Button>

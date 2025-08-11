@@ -113,26 +113,7 @@ export default function DemoPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-cyan-600 via-teal-600 to-blue-700">
-      {/* Header */}
-      <div className="bg-white/10 backdrop-blur-sm border-b border-white/20">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-white">
-              QuickCourt Demo
-            </Link>
-            <div className="flex items-center space-x-4">
-              <Link href="/auth/signin">
-                <Button variant="ghost" className="text-white hover:bg-white/20">
-                  Sign In
-                </Button>
-              </Link>
-              <Link href="/auth/signup">
-                <Button className="bg-primary text-primary-foreground hover:opacity-90">Sign Up</Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
       <div className="max-w-7xl mx-auto px-4 py-12">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-12">

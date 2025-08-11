@@ -19,10 +19,10 @@ import {
   Activity,
   ArrowDownRight,
   ArrowUpRight,
+  Banknote,
   Calendar,
   CheckCircle,
   Clock,
-  Banknote,
   MapPin,
   Star,
   TrendingUp,
@@ -462,8 +462,14 @@ export default function EnhancedDashboard() {
                           </div>
                           <div className="space-y-1">
                             <div className="flex items-center space-x-2">
-                              <h3 className="font-semibold text-lg">{venue.name}</h3>
-                              <Badge variant={venue.isActive ? "default" : "secondary"}>
+                              <h3 className="font-semibold text-lg">
+                                {venue.name}
+                              </h3>
+                              <Badge
+                                variant={
+                                  venue.isActive ? "default" : "secondary"
+                                }
+                              >
                                 {venue.isActive ? "Active" : "Inactive"}
                               </Badge>
                             </div>
@@ -475,7 +481,9 @@ export default function EnhancedDashboard() {
                               <span>•</span>
                               <span>{venue.totalBookings} bookings</span>
                               <span>•</span>
-                              <span>{formatCurrency(venue.totalRevenue)} revenue</span>
+                              <span>
+                                {formatCurrency(venue.totalRevenue)} revenue
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -490,7 +498,9 @@ export default function EnhancedDashboard() {
                 ) : (
                   <div className="text-center py-12">
                     <MapPin className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold mb-2">No venues yet</h3>
+                    <h3 className="text-lg font-semibold mb-2">
+                      No venues yet
+                    </h3>
                     <p className="text-muted-foreground mb-6">
                       Create your first venue to start accepting bookings
                     </p>

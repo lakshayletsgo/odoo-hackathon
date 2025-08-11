@@ -42,6 +42,14 @@ export async function POST(
       return NextResponse.json({ error: "Invite not found" }, { status: 404 });
     }
 
+    // Check if user is trying to join their own invite
+    if (invite.creatorId === session.user.id) {
+      return NextResponse.json(
+        { error: "You cannot join your own invite" },
+        { status: 400 }
+      );
+    }
+
     const playersLeft = invite.playersRequired - invite.playersJoined;
     if (playersLeft < validatedData.playersCount) {
       return NextResponse.json(

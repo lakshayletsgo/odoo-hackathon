@@ -1,13 +1,13 @@
 "use client";
 
-import { DashboardHeader } from "@/components/layout/dashboard-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { UserProfileCard } from "@/components/ui/user-profile-card";
-import { CalendarDays, Clock, MapPin, Plus, Users } from "lucide-react";
+import { CalendarDays, Clock, MapPin, Plus, Search, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
+import Link from "next/link";
 import { useState } from "react";
 
 interface Booking {
@@ -37,8 +37,6 @@ export default function UserDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <DashboardHeader />
-
       <div className="container mx-auto p-6">
         {/* Welcome Section */}
         <div className="mb-8">
@@ -132,10 +130,12 @@ export default function UserDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <Button className="w-full">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Game Invite
-                </Button>
+                <Link href="/play-together">
+                  <Button className="w-full">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Game Invite
+                  </Button>
+                </Link>
 
                 {invites.length === 0 ? (
                   <p className="text-muted-foreground text-center py-4">
@@ -191,18 +191,33 @@ export default function UserDashboard() {
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-3">
-                <Button variant="outline" className="h-20 z-10 flex-col gap-2">
-                  <CalendarDays className="h-6 w-6" />
-                  <span>Book a Court</span>
-                </Button>
-                <Button variant="outline" className="h-20 flex-col gap-2">
-                  <Users className="h-6 w-6" />
-                  <span>Find Players</span>
-                </Button>
-                <Button variant="outline" className="h-20 flex-col gap-2">
-                  <MapPin className="h-6 w-6" />
-                  <span>Find Venues</span>
-                </Button>
+                <Link href="/search" className="block">
+                  <Button
+                    variant="outline"
+                    className="h-20 w-full flex-col gap-2 hover:bg-primary/10 hover:border-primary transition-all duration-200"
+                  >
+                    <Search className="h-6 w-6" />
+                    <span>Book a Court</span>
+                  </Button>
+                </Link>
+                <Link href="/play-together" className="block">
+                  <Button
+                    variant="outline"
+                    className="h-20 w-full flex-col gap-2 hover:bg-primary/10 hover:border-primary transition-all duration-200"
+                  >
+                    <Users className="h-6 w-6" />
+                    <span>Find Players</span>
+                  </Button>
+                </Link>
+                <Link href="/venues" className="block">
+                  <Button
+                    variant="outline"
+                    className="h-20 w-full flex-col gap-2 hover:bg-primary/10 hover:border-primary transition-all duration-200"
+                  >
+                    <MapPin className="h-6 w-6" />
+                    <span>Find Venues</span>
+                  </Button>
+                </Link>
               </div>
             </CardContent>
           </Card>

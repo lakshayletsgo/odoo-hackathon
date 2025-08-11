@@ -1,41 +1,51 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Shield } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { motion } from "framer-motion";
+import { Shield } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function VerifyOTPPage() {
-  const [otp, setOtp] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState("")
-  const [canResend, setCanResend] = useState(false)
-  const [countdown, setCountdown] = useState(60)
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const email = searchParams.get("email")
+  const [otp, setOtp] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [canResend, setCanResend] = useState(false);
+  const [countdown, setCountdown] = useState(60);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email");
 
   useEffect(() => {
     if (countdown > 0) {
-      const timer = setTimeout(() => setCountdown(countdown - 1), 1000)
-      return () => clearTimeout(timer)
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
     } else {
-      setCanResend(true)
+      setCanResend(true);
     }
-  }, [countdown])
+  }, [countdown]);
 
   const handleVerifyOTP = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
     try {
       const response = await fetch("/api/auth/verify-otp", {
@@ -47,28 +57,28 @@ export default function VerifyOTPPage() {
           email,
           otp,
         }),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Invalid OTP")
+        throw new Error(result.error || "Invalid OTP");
       }
 
-      setSuccess("Account verified successfully!")
+      setSuccess("Account verified successfully!");
       setTimeout(() => {
-        router.push("/auth/signin")
-      }, 2000)
+        router.push("/auth/signin");
+      }, 2000);
     } catch (error: any) {
-      setError(error.message)
+      setError(error.message);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleResendOTP = async () => {
-    setIsLoading(true)
-    setError("")
+    setIsLoading(true);
+    setError("");
 
     try {
       const response = await fetch("/api/auth/resend-otp", {
@@ -77,23 +87,23 @@ export default function VerifyOTPPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email }),
-      })
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || "Failed to resend OTP")
+        throw new Error(result.error || "Failed to resend OTP");
       }
 
-      setSuccess("OTP sent successfully!")
-      setCanResend(false)
-      setCountdown(60)
+      setSuccess("OTP sent successfully!");
+      setCanResend(false);
+      setCountdown(60);
     } catch (error: any) {
-      setError(error.message)
+      setError(error.message);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   if (!email) {
     return (
@@ -104,7 +114,7 @@ export default function VerifyOTPPage() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -120,8 +130,12 @@ export default function VerifyOTPPage() {
             <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto mb-4 text-secondary-foreground">
               <Shield className="h-8 w-8" />
             </div>
-            <CardTitle className="text-2xl font-bold">Verify Your Email</CardTitle>
-            <CardDescription>We've sent a 6-digit code to {email}</CardDescription>
+            <CardTitle className="text-2xl font-bold">
+              Verify Your Email
+            </CardTitle>
+            <CardDescription>
+              We've sent a 6-digit code to {email}
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {error && (
@@ -138,16 +152,21 @@ export default function VerifyOTPPage() {
 
             <form onSubmit={handleVerifyOTP} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="otp">Verification Code</Label>
-                <Input
-                  id="otp"
-                  type="text"
-                  placeholder="Enter 6-digit code"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  maxLength={6}
-                  className="text-center text-2xl tracking-widest"
-                />
+                <div className="flex justify-center">
+                  <InputOTP maxLength={6} value={otp} onChange={setOtp}>
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                    </InputOTPGroup>
+                    <InputOTPSeparator />
+                    <InputOTPGroup>
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
               </div>
 
               <Button
@@ -174,5 +193,5 @@ export default function VerifyOTPPage() {
         </Card>
       </motion.div>
     </div>
-  )
+  );
 }

@@ -68,51 +68,7 @@ export default function PlayTogetherPage() {
           </Button>
         </div>
 
-        <div className="grid md:grid-cols-2  lg:grid-cols-3 gap-6 mb-8">
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-600" />
-                Find Players
-              </CardTitle>
-              <CardDescription>
-                Connect with players looking for teammates
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full">Browse Players</Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-green-600" />
-                Find Venues
-              </CardTitle>
-              <CardDescription>Discover sports venues near you</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full">Browse Venues</Button>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-purple-600" />
-                Join Events
-              </CardTitle>
-              <CardDescription>
-                Participate in scheduled sports events
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full">View Events</Button>
-            </CardContent>
-          </Card>
-        </div>
-
+        
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
           <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
             <Trophy className="w-6 h-6 text-yellow-600" />
@@ -144,15 +100,21 @@ export default function PlayTogetherPage() {
                           {invite.playersLeft} spots left
                         </p>
                       </div>
-                      <Button
-                        onClick={() => {
-                          setSelectedInvite(invite);
-                          setShowJoinModal(true);
-                        }}
-                        disabled={invite.playersLeft === 0}
-                      >
-                        Join
-                      </Button>
+                      {invite.creatorId === session?.user?.id ? (
+                        <span className="px-3 py-1 text-sm bg-gray-100 text-gray-600 rounded-full border">
+                          Your Invite
+                        </span>
+                      ) : (
+                        <Button
+                          onClick={() => {
+                            setSelectedInvite(invite);
+                            setShowJoinModal(true);
+                          }}
+                          disabled={invite.playersLeft === 0}
+                        >
+                          Join
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>

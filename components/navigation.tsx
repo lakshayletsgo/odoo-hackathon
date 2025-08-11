@@ -1,11 +1,8 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useSession, signOut } from "next-auth/react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,29 +10,29 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { 
-  Menu, 
-  Search, 
-  Building2, 
-  Calendar, 
-  User, 
-  Settings, 
-  LogOut,
-  Sun,
-  Moon,
-  Monitor
-} from "lucide-react"
+} from "@/components/ui/dropdown-menu";
 import {
   NavigationMenu,
-  NavigationMenuList,
   NavigationMenuItem,
   NavigationMenuLink,
-} from "@/components/ui/navigation-menu"
-import { useTheme } from "next-themes"
+  NavigationMenuList,
+} from "@/components/ui/navigation-menu";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Building2,
+  LogOut,
+  Menu,
+  Monitor,
+  Moon,
+  Settings,
+  Sun,
+  User,
+} from "lucide-react";
+import { signOut, useSession } from "next-auth/react";
+import { useTheme } from "next-themes";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
 
 const navigationItems = [
   { href: "/", label: "Home", public: true },
@@ -43,28 +40,28 @@ const navigationItems = [
   { href: "/dashboard", label: "Dashboard", roles: ["USER"] },
   { href: "/owner/dashboard", label: "Owner Dashboard", roles: ["OWNER"] },
   { href: "/admin", label: "Admin", roles: ["ADMIN"] },
-]
+];
 
 export function Navigation() {
-  const { data: session } = useSession()
-  const pathname = usePathname()
-  const { theme, setTheme } = useTheme()
-  const [isOpen, setIsOpen] = useState(false)
+  const { data: session } = useSession();
+  const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
+  const [isOpen, setIsOpen] = useState(false);
 
   const getInitials = (name: string) => {
     return name
       .split(" ")
       .map((n) => n[0])
       .join("")
-      .toUpperCase()
-  }
+      .toUpperCase();
+  };
 
   const filteredNavItems = navigationItems.filter((item) => {
-    if (item.public) return true
-    if (!session) return false
-    if (!item.roles) return true
-    return item.roles.includes((session.user as any)?.role)
-  })
+    if (item.public) return true;
+    if (!session) return false;
+    if (!item.roles) return true;
+    return item.roles.includes((session.user as any)?.role);
+  });
 
   const ThemeToggle = () => (
     <DropdownMenu>
@@ -90,18 +87,18 @@ export function Navigation() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 
   const UserMenu = () => (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={session?.user?.image || ""} />
-              <AvatarFallback className="bg-primary text-primary-foreground">
-                {getInitials(session?.user?.name || "U")}
-              </AvatarFallback>
-            </Avatar>
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={session?.user?.image || ""} />
+            <AvatarFallback className="bg-primary text-primary-foreground">
+              {getInitials(session?.user?.name || "U")}
+            </AvatarFallback>
+          </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -120,7 +117,7 @@ export function Navigation() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/profile">
+          <Link href="/dashboard">
             <User className="mr-2 h-4 w-4" />
             Profile
           </Link>
@@ -132,7 +129,7 @@ export function Navigation() {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={() => signOut({ callbackUrl: "/" })}
           className="text-red-600 focus:text-red-600"
         >
@@ -141,7 +138,7 @@ export function Navigation() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 
   return (
     <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -227,7 +224,7 @@ export function Navigation() {
                       </div>
                     </div>
                   )}
-                  
+
                   <div className="space-y-2">
                     {filteredNavItems.map((item) => (
                       <Link
@@ -247,12 +244,21 @@ export function Navigation() {
 
                   {!session && (
                     <div className="space-y-2 pt-4 border-t">
-                      <Link href="/auth/signin" onClick={() => setIsOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start">
+                      <Link
+                        href="/auth/signin"
+                        onClick={() => setIsOpen(false)}
+                      >
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start"
+                        >
                           Sign In
                         </Button>
                       </Link>
-                      <Link href="/auth/signup" onClick={() => setIsOpen(false)}>
+                      <Link
+                        href="/auth/signup"
+                        onClick={() => setIsOpen(false)}
+                      >
                         <Button className="w-full justify-start">
                           Sign Up
                         </Button>
@@ -262,24 +268,30 @@ export function Navigation() {
 
                   {session && (
                     <div className="space-y-2 pt-4 border-t">
-                      <Link href="/profile" onClick={() => setIsOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start">
+                      <Link href="/dashboard" onClick={() => setIsOpen(false)}>
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start"
+                        >
                           <User className="mr-2 h-4 w-4" />
                           Profile
                         </Button>
                       </Link>
                       <Link href="/settings" onClick={() => setIsOpen(false)}>
-                        <Button variant="ghost" className="w-full justify-start">
+                        <Button
+                          variant="ghost"
+                          className="w-full justify-start"
+                        >
                           <Settings className="mr-2 h-4 w-4" />
                           Settings
                         </Button>
                       </Link>
-                      <Button 
-                        variant="ghost" 
+                      <Button
+                        variant="ghost"
                         className="w-full justify-start text-red-600 hover:text-red-600 hover:bg-red-50"
                         onClick={() => {
-                          setIsOpen(false)
-                          signOut({ callbackUrl: "/" })
+                          setIsOpen(false);
+                          signOut({ callbackUrl: "/" });
                         }}
                       >
                         <LogOut className="mr-2 h-4 w-4" />
@@ -294,5 +306,5 @@ export function Navigation() {
         </div>
       </div>
     </nav>
-  )
+  );
 }
