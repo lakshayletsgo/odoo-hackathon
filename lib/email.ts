@@ -104,7 +104,7 @@ export async function sendBookingConfirmation(email: string, booking: any) {
           booking.date
         ).toLocaleDateString()}</p>
         <p><strong>Time:</strong> ${booking.startTime} - ${booking.endTime}</p>
-        <p><strong>Total:</strong> $${booking.totalAmount}</p>
+        <p><strong>Total:</strong> ₹{booking.totalAmount}</p>
       </div>
       <p>See you on the court!</p>
     </div>

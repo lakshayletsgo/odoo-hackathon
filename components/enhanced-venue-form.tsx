@@ -29,7 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Plus, Upload, X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -84,9 +84,15 @@ const AMENITIES = [
   "First Aid",
 ];
 
-export default function EnhancedVenueForm() {
+interface EnhancedVenueFormProps {
+  venueId?: string;
+  isEdit?: boolean;
+}
+
+export default function EnhancedVenueForm({ venueId, isEdit = false }: EnhancedVenueFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(isEdit);
   const router = useRouter();
 
   const form = useForm<VenueForm>({
@@ -112,6 +118,56 @@ export default function EnhancedVenueForm() {
     control: form.control,
     name: "courts",
   });
+
+  // Fetch venue data for editing
+  useEffect(() => {
+    if (isEdit && venueId) {
+      fetchVenueData();
+    }
+  }, [isEdit, venueId]);
+
+  const fetchVenueData = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch(`/api/venues/${venueId}`);
+      if (response.ok) {
+        const venue = await response.json();
+        
+        // Set form values
+        form.reset({
+          name: venue.name,
+          description: venue.description || "",
+          address: venue.address,
+          city: venue.city,
+          state: venue.state,
+          zipCode: venue.zipCode,
+          latitude: venue.latitude || 0,
+          longitude: venue.longitude || 0,
+          images: venue.images || [],
+          amenities: venue.amenities || [],
+          courts: venue.courts.map((court: any) => ({
+            name: court.name,
+            sport: court.sport,
+            pricePerHour: court.pricePerHour,
+            capacity: court.capacity || 1,
+            description: court.description || "",
+          })),
+        });
+
+        // Set uploaded images
+        setUploadedImages(venue.images || []);
+      } else {
+        toast.error("Failed to load venue data");
+        router.push("/owner/dashboard");
+      }
+    } catch (error) {
+      console.error("Error fetching venue:", error);
+      toast.error("Error loading venue data");
+      router.push("/owner/dashboard");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleImageUpload = async (files: FileList | null) => {
     if (!files) return;
@@ -144,8 +200,11 @@ export default function EnhancedVenueForm() {
   const onSubmit = async (data: VenueForm) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/venues", {
-        method: "POST",
+      const url = isEdit ? `/api/venues/${venueId}` : "/api/venues";
+      const method = isEdit ? "PUT" : "POST";
+      
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
@@ -154,26 +213,39 @@ export default function EnhancedVenueForm() {
       });
 
       if (response.ok) {
-        toast.success("Venue created successfully!");
+        toast.success(isEdit ? "Venue updated successfully!" : "Venue created successfully!");
         router.push("/owner/dashboard");
       } else {
         const error = await response.text();
-        toast.error(error || "Failed to create venue");
+        toast.error(error || (isEdit ? "Failed to update venue" : "Failed to create venue"));
       }
     } catch (error) {
       console.error("Submit error:", error);
-      toast.error("Failed to create venue");
+      toast.error(isEdit ? "Failed to update venue" : "Failed to create venue");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Loading venue data...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">Create New Venue</h1>
+        <h1 className="text-3xl font-bold">
+          {isEdit ? "Edit Venue" : "Create New Venue"}
+        </h1>
         <p className="text-gray-600">
-          Add your sports facility to our platform
+          {isEdit ? "Update your venue information" : "Add your sports facility to our platform"}
         </p>
       </div>
 
@@ -474,7 +546,7 @@ export default function EnhancedVenueForm() {
                       name={`courts.${index}.pricePerHour`}
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Price per Hour ($)</FormLabel>
+                          <FormLabel>Price per Hour (₹)</FormLabel>
                           <FormControl>
                             <Input
                               type="number"
@@ -560,8 +632,11 @@ export default function EnhancedVenueForm() {
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create Venue"}
+            <Button type="submit" disabled={isSubmitting || isLoading}>
+              {isSubmitting 
+                ? (isEdit ? "Updating..." : "Creating...") 
+                : (isEdit ? "Update Venue" : "Create Venue")
+              }
             </Button>
           </div>
         </form>

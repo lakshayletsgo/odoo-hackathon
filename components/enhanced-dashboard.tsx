@@ -22,7 +22,7 @@ import {
   Calendar,
   CheckCircle,
   Clock,
-  DollarSign,
+  Banknote,
   MapPin,
   Star,
   TrendingUp,
@@ -204,7 +204,7 @@ export default function EnhancedDashboard() {
                   <CardTitle className="text-sm font-medium">
                     Total Revenue
                   </CardTitle>
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  <Banknote className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="space-y-1">
                   <div className="text-2xl font-bold">
@@ -466,9 +466,6 @@ export default function EnhancedDashboard() {
                               <Badge variant={venue.isActive ? "default" : "secondary"}>
                                 {venue.isActive ? "Active" : "Inactive"}
                               </Badge>
-                              {!venue.isApproved && (
-                                <Badge variant="outline">Pending Approval</Badge>
-                              )}
                             </div>
                             <p className="text-sm text-muted-foreground">
                               {venue.address}, {venue.city}, {venue.state}
@@ -485,9 +482,6 @@ export default function EnhancedDashboard() {
                         <div className="flex items-center space-x-2">
                           <Button variant="outline" size="sm" asChild>
                             <Link href={`/venues/${venue.id}`}>View</Link>
-                          </Button>
-                          <Button variant="outline" size="sm">
-                            Edit
                           </Button>
                         </div>
                       </motion.div>

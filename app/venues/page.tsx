@@ -203,13 +203,17 @@ export default function VenuesPage() {
                     <CardTitle className="text-lg font-bold group-hover:text-blue-600 transition-colors">
                       {venue.name}
                     </CardTitle>
-                    {venue.rating && (
+                    {venue.rating && venue.rating > 0 ? (
                       <div className="flex items-center text-sm text-gray-600">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 mr-1" />
                         <span>{venue.rating.toFixed(1)}</span>
-                        {venue.reviewCount && (
+                        {venue.reviewCount && venue.reviewCount > 0 && (
                           <span className="ml-1">({venue.reviewCount})</span>
                         )}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-500">
+                        No ratings yet
                       </div>
                     )}
                   </div>
@@ -236,7 +240,7 @@ export default function VenuesPage() {
                     <div className="flex items-center justify-between text-sm">
                       <span className="text-gray-600">Price:</span>
                       <span className="font-bold text-green-600">
-                        ${venue.pricePerHour}/hour
+                        ₹{venue.pricePerHour}/hour
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-sm">

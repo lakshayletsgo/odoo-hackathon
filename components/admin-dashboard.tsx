@@ -51,7 +51,7 @@ import {
   Building,
   Calendar,
   CheckCircle,
-  DollarSign,
+  Banknote,
   Eye,
   LineChart,
   MapPin,
@@ -434,7 +434,7 @@ export default function AdminDashboard() {
                       <p className="text-sm font-medium text-muted-foreground">
                         Total Revenue
                       </p>
-                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                      <Banknote className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div className="text-2xl font-bold">
                       {formatCurrency(stats.totalRevenue)}
@@ -850,18 +850,9 @@ export default function AdminDashboard() {
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold">4.8</div>
+                    <div className="text-2xl font-bold">0.0</div>
                     <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-3 w-3 ${
-                            i < 4
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-muted-foreground"
-                          }`}
-                        />
-                      ))}
+                      <span className="text-xs text-muted-foreground">No ratings yet</span>
                     </div>
                   </CardContent>
                 </Card>

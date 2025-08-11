@@ -30,14 +30,54 @@ async function getVenue(id: string) {
   if (venue && venue.isActive && venue.owner.isVerified) {
     let images: string[] = [];
     let amenities: string[] = [];
+    
+    console.log("Raw venue.images from DB:", venue.images);
+    console.log("Raw venue.amenities from DB:", venue.amenities);
+    
     try {
-      images = venue.images ? (JSON.parse(venue.images) as string[]) : [];
-    } catch {}
+      if (venue.images) {
+        // Check if it's already a JSON array or a single URL string
+        if (venue.images.startsWith('[')) {
+          // It's a JSON array
+          images = JSON.parse(venue.images) as string[];
+        } else if (venue.images.startsWith('http')) {
+          // It's a single URL string
+          images = [venue.images];
+        } else {
+          // Try to parse as JSON, fallback to treating as single string
+          try {
+            images = JSON.parse(venue.images) as string[];
+          } catch {
+            images = [venue.images];
+          }
+        }
+      } else {
+        images = [];
+      }
+    } catch (error) {
+      console.error("Error parsing images:", error, "Raw value:", venue.images);
+      images = [];
+    }
     try {
-      amenities = venue.amenities
-        ? (JSON.parse(venue.amenities) as string[])
-        : [];
-    } catch {}
+      if (venue.amenities) {
+        // Check if it's already a JSON array or a comma-separated string
+        if (venue.amenities.startsWith('[')) {
+          // It's a JSON array
+          amenities = JSON.parse(venue.amenities) as string[];
+        } else {
+          // It's likely a comma-separated string
+          amenities = venue.amenities.split(',').map(a => a.trim()).filter(Boolean);
+        }
+      } else {
+        amenities = [];
+      }
+    } catch (error) {
+      console.error("Error parsing amenities:", error, "Raw value:", venue.amenities);
+      amenities = [];
+    }
+
+    console.log("Parsed images:", images);
+    console.log("Parsed amenities:", amenities);
 
     return { ...venue, images, amenities };
   }
@@ -55,7 +95,10 @@ export default async function VenuePage({
   const venue = await getVenue(id);
   if (!venue) return notFound();
 
-  const primaryImage = venue.images[0] || "/placeholder.jpg";
+  console.log("Raw venue.images:", venue.images);
+  console.log("Parsed venue.images:", venue.images);
+  const primaryImage = venue.images && venue.images.length > 0 ? venue.images[0] : "/placeholder.svg";
+  console.log("Primary image:", primaryImage);
 
   const dayNames = [
     "Sunday",
@@ -100,7 +143,7 @@ export default async function VenuePage({
             <div>
               <h4 className="font-semibold">{court.name}</h4>
               <p className="text-sm text-muted-foreground">
-                {court.sport} • ${court.pricePerHour}/hour
+                {court.sport} • ₹{court.pricePerHour}/hour
               </p>
             </div>
             <Separator />
@@ -141,13 +184,21 @@ export default async function VenuePage({
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
-              <Star className="h-5 w-5 text-yellow-500 fill-current" />
-              <span className="font-semibold">
-                {Number(venue.rating || 0).toFixed(1)}
-              </span>
-              <span className="text-muted-foreground">
-                ({venue.totalRating || 0})
-              </span>
+              {venue.rating && venue.rating > 0 ? (
+                <>
+                  <Star className="h-5 w-5 text-yellow-500 fill-current" />
+                  <span className="font-semibold">
+                    {Number(venue.rating).toFixed(1)}
+                  </span>
+                  <span className="text-muted-foreground">
+                    ({venue.totalRating || 0} reviews)
+                  </span>
+                </>
+              ) : (
+                <span className="text-muted-foreground text-sm">
+                  No ratings yet
+                </span>
+              )}
             </div>
             <BookingActions
               venueId={venue.id}
@@ -237,7 +288,7 @@ export default async function VenuePage({
                     </div>
                     <div className="text-right">
                       <p className="text-2xl font-bold text-primary">
-                        ${court.pricePerHour}
+                        ₹{court.pricePerHour}
                       </p>
                       <p className="text-xs text-muted-foreground">per hour</p>
                     </div>
@@ -282,39 +333,15 @@ export default async function VenuePage({
           </section>
         )}
 
-        {/* Reviews placeholder; can be wired to real data later */}
+        {/* Reviews section - will be implemented when review system is ready */}
         <section className="space-y-4 mt-6">
           <h2 className="text-xl font-semibold">Player Reviews & Ratings</h2>
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <Card key={i}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <p className="font-medium">User {i}</p>
-                      <p className="text-sm text-muted-foreground">
-                        Nice court, well maintained
-                      </p>
-                    </div>
-                    <div className="text-right text-sm text-muted-foreground">
-                      Recently
-                    </div>
-                  </div>
-                  <div className="mt-2 flex items-center gap-1">
-                    {[...Array(5)].map((_, idx) => (
-                      <Star
-                        key={idx}
-                        className={`h-4 w-4 ${
-                          idx < 4
-                            ? "fill-yellow-500 text-yellow-500"
-                            : "text-muted-foreground"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+          <div className="text-center py-8 bg-muted/30 rounded-lg">
+            <Star className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-muted-foreground mb-2">No Reviews Yet</h3>
+            <p className="text-sm text-muted-foreground">
+              Be the first to review this venue after your visit!
+            </p>
           </div>
         </section>
       </div>

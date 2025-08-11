@@ -68,7 +68,7 @@ export function BookingModal({
               </SelectTrigger>
               <SelectContent>
                 {courts.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name} • ${c.pricePerHour}/hr</SelectItem>
+                  <SelectItem key={c.id} value={c.id}>{c.name} • ₹{c.pricePerHour}/hr</SelectItem>
                 ))}
               </SelectContent>
             </Select>

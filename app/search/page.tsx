@@ -46,7 +46,7 @@ interface Venue {
   courts: number;
 }
 const sortOptions = [
-  { value: "distance", label: "Distance" },
+  { value: "distance", label: "Distance (km)" },
   { value: "price-low", label: "Price: Low to High" },
   { value: "price-high", label: "Price: High to Low" },
   { value: "rating", label: "Highest Rated" },
@@ -99,9 +99,8 @@ export default function SearchPage() {
           name: venue.name,
           address: venue.address,
           city: venue.city,
-          rating: venue.rating || 4.5,
-          totalRatings:
-            venue.reviewCount || Math.floor(Math.random() * 100) + 20,
+          rating: venue.rating || 0,
+          totalRatings: venue.reviewCount || 0,
           priceRange: [
             venue.pricePerHour || 25,
             (venue.pricePerHour || 25) + 20,
@@ -111,7 +110,7 @@ export default function SearchPage() {
             venue.sport || "Basketball",
           ],
           amenities: venue.amenities || ["Parking", "Locker Rooms"],
-          distance: Math.random() * 3 + 0.5, // Mock distance for now
+          distance: (Math.random() * 3 + 0.5) * 1.609344, // Mock distance in kilometers
           courts: venue.courts?.length || 1,
         }));
         setVenues(transformedVenues);
@@ -156,9 +155,9 @@ export default function SearchPage() {
       case "price-high":
         return b.priceRange[1] - a.priceRange[1];
       case "rating":
-        return b.rating - a.rating;
+        return (b.rating || 0) - (a.rating || 0);
       case "popular":
-        return b.totalRatings - a.totalRatings;
+        return (b.totalRatings || 0) - (a.totalRatings || 0);
       default:
         return 0;
     }
@@ -365,14 +364,22 @@ export default function SearchPage() {
                         </div>
                         <div className="text-right">
                           <div className="flex items-center space-x-1">
-                            <Star className="h-4 w-4 text-yellow-500 fill-current" />
-                            <span className="font-medium">{venue.rating}</span>
-                            <span className="text-gray-500 text-sm">
-                              ({venue.totalRatings})
-                            </span>
+                            {venue.rating && venue.rating > 0 ? (
+                              <>
+                                <Star className="h-4 w-4 text-yellow-500 fill-current" />
+                                <span className="font-medium">{venue.rating}</span>
+                                <span className="text-gray-500 text-sm">
+                                  ({venue.totalRatings})
+                                </span>
+                              </>
+                            ) : (
+                              <span className="text-gray-500 text-sm">
+                                No ratings yet
+                              </span>
+                            )}
                           </div>
                           <p className="text-sm text-gray-500 mt-1">
-                            {venue.distance} miles away
+                            {venue.distance.toFixed(2)} km away
                           </p>
                         </div>
                       </div>

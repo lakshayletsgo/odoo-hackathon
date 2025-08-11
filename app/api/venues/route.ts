@@ -26,6 +26,8 @@ export async function GET(request: NextRequest) {
 
     const venues = await prisma.venue.findMany({
       where: {
+        isApproved: true, // Only show approved venues (all venues are now auto-approved)
+        isActive: true, // Only show active venues
         ...(sport &&
           sport !== "all" && {
             courts: {
@@ -51,29 +53,29 @@ export async function GET(request: NextRequest) {
     });
 
     // Transform the data to include amenities as an array and calculate pricing
-    const transformedVenues = venues.map((venue) => ({
+    const transformedVenues = venues.map((venue: any) => ({
       ...venue,
       amenities: venue.amenities
         ? venue.amenities
             .split(",")
-            .map((a) => a.trim())
+            .map((a: string) => a.trim())
             .filter(Boolean)
         : [],
       images: venue.images
         ? venue.images
             .split(",")
-            .map((img) => img.trim())
+            .map((img: string) => img.trim())
             .filter(Boolean)
         : [],
-      reviewCount: Math.floor(Math.random() * 50) + 5,
-      rating: parseFloat((Math.random() * 2 + 3).toFixed(1)),
+      reviewCount: venue.totalRating || 0,
+      rating: venue.rating || 0,
       pricePerHour:
         venue.courts.length > 0
-          ? Math.min(...venue.courts.map((c) => c.pricePerHour))
+          ? Math.min(...venue.courts.map((c: any) => c.pricePerHour))
           : 0,
       sport: venue.courts.length > 0 ? venue.courts[0].sport : "Various",
       capacity: venue.courts.length > 0 ? venue.courts.length * 4 : 0,
-      isAvailable: venue.courts.some((c) => c.isActive),
+      isAvailable: venue.courts.some((c: any) => c.isActive),
     }));
 
     return NextResponse.json(transformedVenues);
@@ -109,13 +111,14 @@ export async function POST(request: NextRequest) {
 
     const { courts, amenities, images, ...venueData } = body;
 
-    // Create venue with courts
+    // Create venue with courts - auto-approved for direct publishing
     const venue = await prisma.venue.create({
       data: {
         ...venueData,
         amenities: amenities?.join(", ") || "",
         images: images?.join(", ") || "",
         ownerId: session.user.id,
+        isApproved: true, // Auto-approve venues for direct publishing
         courts: {
           create:
             courts?.map((court: any) => ({

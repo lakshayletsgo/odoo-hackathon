@@ -40,8 +40,8 @@ export async function GET() {
       totalSpent,
       upcomingBookings,
       completedBookings,
-      favoriteVenues: 3, // Mock data - implement favorites feature later
-      averageRating: 4.5, // Mock data - implement rating feature later
+      favoriteVenues: 0, // Will be implemented when favorites feature is added
+      averageRating: 0, // Will be calculated from actual user ratings
     });
   } catch (error) {
     console.error("User stats error:", error);

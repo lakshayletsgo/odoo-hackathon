@@ -59,6 +59,7 @@ model User {
   bookings Booking[]
   otpCodes OtpCode[]
   invites  Invite[]
+  reviews  Review[]
 }
 
 model OtpCode {
