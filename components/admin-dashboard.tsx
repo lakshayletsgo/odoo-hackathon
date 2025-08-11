@@ -172,6 +172,7 @@ export default function AdminDashboard() {
             { sport: "Basketball", bookings: 720 },
             { sport: "Football", bookings: 680 },
             { sport: "Badminton", bookings: 420 },
+            { sport: "Swimming", bookings: 380 },
           ],
         },
       });

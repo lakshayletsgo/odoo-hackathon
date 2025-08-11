@@ -53,14 +53,15 @@ interface CreateInviteFormProps {
 }
 
 const sports = [
+  { value: "SWIMMING", label: "Swimming" },
   { value: "TENNIS", label: "Tennis" },
-  { value: "BASKETBALL", label: "Basketball" },
-  { value: "FOOTBALL", label: "Football" },
-  { value: "BADMINTON", label: "Badminton" },
-  { value: "VOLLEYBALL", label: "Volleyball" },
-  { value: "SQUASH", label: "Squash" },
   { value: "CRICKET", label: "Cricket" },
-  { value: "SOCCER", label: "Soccer" },
+  { value: "FOOTBALL", label: "Football" },
+  { value: "VOLLEYBALL", label: "Volleyball" },
+  { value: "BASKETBALL", label: "Basketball" },
+  { value: "PICKLEBALL", label: "Pickleball" },
+  { value: "BADMINTON", label: "Badminton" },
+  { value: "TABLE_TENNIS", label: "Table Tennis" },
 ];
 
 export function CreateInviteForm({

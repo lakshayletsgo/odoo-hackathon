@@ -19,11 +19,15 @@ import Image from "next/image";
 import Link from "next/link";
 
 const sports = [
-  { name: "Football", icon: "⚽", color: "bg-green-500" },
-  { name: "Badminton", icon: "🏸", color: "bg-yellow-500" },
-  { name: "Basketball", icon: "🏀", color: "bg-orange-500" },
+  { name: "Swimming", icon: "🏊", color: "bg-blue-500" },
   { name: "Tennis", icon: "🎾", color: "bg-green-600" },
-  { name: "Volleyball", icon: "🏐", color: "bg-blue-500" },
+  { name: "Cricket", icon: "🏏", color: "bg-red-500" },
+  { name: "Football", icon: "⚽", color: "bg-green-500" },
+  { name: "Volleyball", icon: "�", color: "bg-blue-500" },
+  { name: "Basketball", icon: "🏀", color: "bg-orange-500" },
+  { name: "Pickleball", icon: "�", color: "bg-purple-500" },
+  { name: "Badminton", icon: "🏸", color: "bg-yellow-500" },
+  { name: "Table Tennis", icon: "�", color: "bg-pink-500" },
 ];
 
 const featuredVenues = [

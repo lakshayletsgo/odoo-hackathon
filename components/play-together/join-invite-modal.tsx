@@ -141,7 +141,14 @@ export function JoinInviteModal({
           <div className="flex justify-between items-start">
             <h3 className="font-medium">{invite.name}</h3>
             <Badge variant="secondary">
-              {invite.sport.charAt(0) + invite.sport.slice(1).toLowerCase()}
+              {invite.sport
+                .replace(/_/g, " ")
+                .split(" ")
+                .map(
+                  (word) =>
+                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                )
+                .join(" ")}
             </Badge>
           </div>
 

@@ -1,5 +1,3 @@
-"use client";
-
 import { CreateInviteForm } from "@/components/play-together/create-invite-form";
 import { JoinInviteModal } from "@/components/play-together/join-invite-modal";
 import { ManageRequestsModal } from "@/components/play-together/manage-requests-modal";
@@ -21,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SPORTS } from "@/lib/constants";
 import axios from "axios";
 import { CalendarDays, Clock, MapPin, Plus, Users } from "lucide-react";
 import { useSession } from "next-auth/react";
@@ -62,17 +61,6 @@ export default function PlayTogetherPage() {
   const [venueFilter, setVenueFilter] = useState("");
   const [sportFilter, setSportFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
-
-  const sports = [
-    "TENNIS",
-    "BASKETBALL",
-    "FOOTBALL",
-    "BADMINTON",
-    "VOLLEYBALL",
-    "SQUASH",
-    "CRICKET",
-    "SOCCER",
-  ];
 
   useEffect(() => {
     fetchInvites();
@@ -217,9 +205,9 @@ export default function PlayTogetherPage() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Sports</SelectItem>
-                      {sports.map((sport) => (
-                        <SelectItem key={sport} value={sport}>
-                          {sport.charAt(0) + sport.slice(1).toLowerCase()}
+                      {SPORTS.map((sport) => (
+                        <SelectItem key={sport} value={sport.toUpperCase()}>
+                          {sport}
                         </SelectItem>
                       ))}
                     </SelectContent>

@@ -1,33 +1,39 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
-import { useForm, useFieldArray } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { z } from "zod"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { 
-  MapPin, 
-  Plus, 
-  Trash2, 
-  Upload, 
-  Building, 
-  Clock, 
-  DollarSign,
-  Users,
-  Image as ImageIcon
-} from "lucide-react"
-import { toast } from "sonner"
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { motion } from "framer-motion";
+import { Building, Plus, Trash2, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { useFieldArray, useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
 
 const venueSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -40,30 +46,48 @@ const venueSchema = z.object({
   longitude: z.number().optional(),
   images: z.array(z.string()).optional(),
   amenities: z.array(z.string()).optional(),
-  courts: z.array(z.object({
-    name: z.string().min(1, "Court name is required"),
-    sport: z.string().min(1, "Sport is required"),
-    pricePerHour: z.number().min(1, "Price must be greater than 0"),
-    capacity: z.number().min(1, "Capacity must be at least 1"),
-    description: z.string().optional(),
-  })),
-})
+  courts: z.array(
+    z.object({
+      name: z.string().min(1, "Court name is required"),
+      sport: z.string().min(1, "Sport is required"),
+      pricePerHour: z.number().min(1, "Price must be greater than 0"),
+      capacity: z.number().min(1, "Capacity must be at least 1"),
+      description: z.string().optional(),
+    })
+  ),
+});
 
-type VenueForm = z.infer<typeof venueSchema>
+type VenueForm = z.infer<typeof venueSchema>;
 
 const sports = [
-  "Tennis", "Basketball", "Football", "Volleyball", "Badminton", "Squash", "Table Tennis"
-]
+  "Swimming",
+  "Tennis",
+  "Cricket",
+  "Football",
+  "Volleyball",
+  "Basketball",
+  "Pickleball",
+  "Badminton",
+  "Table Tennis",
+];
 
 const commonAmenities = [
-  "Parking", "Locker Rooms", "Showers", "Cafe", "Equipment Rental", 
-  "Pro Shop", "Coaching", "Restaurant", "First Aid", "WiFi"
-]
+  "Parking",
+  "Locker Rooms",
+  "Showers",
+  "Cafe",
+  "Equipment Rental",
+  "Pro Shop",
+  "Coaching",
+  "Restaurant",
+  "First Aid",
+  "WiFi",
+];
 
 export default function EnhancedVenueForm() {
-  const [isLoading, setIsLoading] = useState(false)
-  const [uploadingImages, setUploadingImages] = useState(false)
-  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
+  const router = useRouter();
 
   const form = useForm<VenueForm>({
     resolver: zodResolver(venueSchema),
@@ -75,20 +99,20 @@ export default function EnhancedVenueForm() {
           pricePerHour: 25,
           capacity: 4,
           description: "",
-        }
+        },
       ],
       amenities: [],
       images: [],
     },
-  })
+  });
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "courts",
-  })
+  });
 
   const onSubmit = async (data: VenueForm) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const response = await fetch("/api/venues", {
         method: "POST",
@@ -96,69 +120,71 @@ export default function EnhancedVenueForm() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(data),
-      })
+      });
 
       if (response.ok) {
         toast.success("Venue created successfully!", {
           description: "Your venue will be reviewed and approved shortly.",
-        })
-        router.push("/owner/dashboard")
+        });
+        router.push("/owner/dashboard");
       } else {
-        const error = await response.json()
+        const error = await response.json();
         toast.error("Failed to create venue", {
           description: error.message || "Please try again later.",
-        })
+        });
       }
     } catch (error) {
       toast.error("Something went wrong", {
         description: "Please check your connection and try again.",
-      })
+      });
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleImageUpload = async (files: FileList) => {
-    if (!files.length) return
-    
-    setUploadingImages(true)
-    const formData = new FormData()
-    
+    if (!files.length) return;
+
+    setUploadingImages(true);
+    const formData = new FormData();
+
     Array.from(files).forEach((file) => {
-      formData.append("images", file)
-    })
+      formData.append("images", file);
+    });
 
     try {
       const response = await fetch("/api/upload", {
         method: "POST",
         body: formData,
-      })
+      });
 
       if (response.ok) {
-        const { urls } = await response.json()
-        const currentImages = form.getValues("images") || []
-        form.setValue("images", [...currentImages, ...urls])
-        toast.success("Images uploaded successfully!")
+        const { urls } = await response.json();
+        const currentImages = form.getValues("images") || [];
+        form.setValue("images", [...currentImages, ...urls]);
+        toast.success("Images uploaded successfully!");
       } else {
-        toast.error("Failed to upload images")
+        toast.error("Failed to upload images");
       }
     } catch (error) {
-      toast.error("Error uploading images")
+      toast.error("Error uploading images");
     } finally {
-      setUploadingImages(false)
+      setUploadingImages(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }} 
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="space-y-8"
         >
           <div className="text-center space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight">Create New Venue</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Create New Venue
+            </h1>
             <p className="text-muted-foreground">
               Set up your sports venue and start accepting bookings
             </p>
@@ -173,9 +199,7 @@ export default function EnhancedVenueForm() {
                     <Building className="h-5 w-5" />
                     Basic Information
                   </CardTitle>
-                  <CardDescription>
-                    Tell us about your venue
-                  </CardDescription>
+                  <CardDescription>Tell us about your venue</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid gap-4 md:grid-cols-2">
@@ -186,7 +210,10 @@ export default function EnhancedVenueForm() {
                         <FormItem>
                           <FormLabel>Venue Name *</FormLabel>
                           <FormControl>
-                            <Input placeholder="Elite Sports Complex" {...field} />
+                            <Input
+                              placeholder="Elite Sports Complex"
+                              {...field}
+                            />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -215,10 +242,10 @@ export default function EnhancedVenueForm() {
                       <FormItem>
                         <FormLabel>Description</FormLabel>
                         <FormControl>
-                          <Textarea 
+                          <Textarea
                             placeholder="Describe your venue, facilities, and what makes it special..."
                             className="min-h-[100px]"
-                            {...field} 
+                            {...field}
                           />
                         </FormControl>
                         <FormMessage />
@@ -326,7 +353,10 @@ export default function EnhancedVenueForm() {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Sport *</FormLabel>
-                              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <Select
+                                onValueChange={field.onChange}
+                                defaultValue={field.value}
+                              >
                                 <FormControl>
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select sport" />
@@ -352,11 +382,13 @@ export default function EnhancedVenueForm() {
                             <FormItem>
                               <FormLabel>Price per Hour ($) *</FormLabel>
                               <FormControl>
-                                <Input 
-                                  type="number" 
+                                <Input
+                                  type="number"
                                   placeholder="25"
                                   {...field}
-                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                  onChange={(e) =>
+                                    field.onChange(Number(e.target.value))
+                                  }
                                 />
                               </FormControl>
                               <FormMessage />
@@ -371,11 +403,13 @@ export default function EnhancedVenueForm() {
                             <FormItem>
                               <FormLabel>Capacity *</FormLabel>
                               <FormControl>
-                                <Input 
-                                  type="number" 
+                                <Input
+                                  type="number"
                                   placeholder="4"
                                   {...field}
-                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                  onChange={(e) =>
+                                    field.onChange(Number(e.target.value))
+                                  }
                                 />
                               </FormControl>
                               <FormMessage />
@@ -391,9 +425,9 @@ export default function EnhancedVenueForm() {
                           <FormItem>
                             <FormLabel>Court Description</FormLabel>
                             <FormControl>
-                              <Textarea 
+                              <Textarea
                                 placeholder="Any special features or notes about this court..."
-                                {...field} 
+                                {...field}
                               />
                             </FormControl>
                             <FormMessage />
@@ -406,13 +440,15 @@ export default function EnhancedVenueForm() {
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => append({
-                      name: "",
-                      sport: "",
-                      pricePerHour: 25,
-                      capacity: 4,
-                      description: "",
-                    })}
+                    onClick={() =>
+                      append({
+                        name: "",
+                        sport: "",
+                        pricePerHour: 25,
+                        capacity: 4,
+                        description: "",
+                      })
+                    }
                     className="w-full"
                   >
                     <Plus className="h-4 w-4 mr-2" />
@@ -452,10 +488,15 @@ export default function EnhancedVenueForm() {
                                         checked={field.value?.includes(amenity)}
                                         onCheckedChange={(checked) => {
                                           return checked
-                                            ? field.onChange([...field.value || [], amenity])
+                                            ? field.onChange([
+                                                ...(field.value || []),
+                                                amenity,
+                                              ])
                                             : field.onChange(
-                                                field.value?.filter((value) => value !== amenity)
-                                              )
+                                                field.value?.filter(
+                                                  (value) => value !== amenity
+                                                )
+                                              );
                                         }}
                                       />
                                     </FormControl>
@@ -463,7 +504,7 @@ export default function EnhancedVenueForm() {
                                       {amenity}
                                     </FormLabel>
                                   </FormItem>
-                                )
+                                );
                               }}
                             />
                           ))}
@@ -476,15 +517,15 @@ export default function EnhancedVenueForm() {
 
               {/* Submit */}
               <div className="flex justify-end space-x-4">
-                <Button 
-                  type="button" 
+                <Button
+                  type="button"
                   variant="outline"
                   onClick={() => router.back()}
                 >
                   Cancel
                 </Button>
-                <Button 
-                  type="submit" 
+                <Button
+                  type="submit"
                   disabled={isLoading}
                   className="min-w-[120px]"
                 >
@@ -496,5 +537,5 @@ export default function EnhancedVenueForm() {
         </motion.div>
       </div>
     </div>
-  )
+  );
 }
