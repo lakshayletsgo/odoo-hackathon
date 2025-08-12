@@ -53,13 +53,14 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts Account[]
-  sessions Session[]
-  venues   Venue[]
-  bookings Booking[]
-  otpCodes OtpCode[]
-  invites  Invite[]
-  reviews  Review[]
+  accounts     Account[]
+  sessions     Session[]
+  venues       Venue[]
+  bookings     Booking[]
+  otpCodes     OtpCode[]
+  invites      Invite[]
+  reviews      Review[]
+  joinRequests JoinRequest[]
 }
 
 model OtpCode {
@@ -210,6 +211,8 @@ model JoinRequest {
   id             String   @id @default(cuid())
   inviteId       String
   invite         Invite   @relation(fields: [inviteId], references: [id])
+  userId         String?  // Optional for backward compatibility
+  user           User?    @relation(fields: [userId], references: [id])
   joinerName     String
   contactDetails String
   playersCount   Int

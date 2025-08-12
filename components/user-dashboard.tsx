@@ -8,6 +8,7 @@ import { UserProfileCard } from "@/components/ui/user-profile-card";
 import {
   Bot,
   CalendarDays,
+  ChevronRight,
   Clock,
   MapPin,
   Plus,
@@ -17,6 +18,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface Booking {
@@ -30,6 +32,29 @@ interface Booking {
     name: string;
     venue: {
       name: string;
+    };
+  };
+  type?: "venue" | "game";
+}
+
+interface JoinRequest {
+  id: string;
+  joinerName: string;
+  contactDetails: string;
+  playersCount: number;
+  status: "PENDING" | "ACCEPTED" | "DECLINED";
+  createdAt: string;
+  invite: {
+    id: string;
+    name: string;
+    venue: string;
+    sport: string;
+    date: string;
+    time: string;
+    playersRequired: number;
+    creator: {
+      name: string;
+      email: string;
     };
   };
 }
@@ -47,11 +72,33 @@ interface Invite {
 export default function UserDashboard() {
   const { data: session } = useSession();
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
+  const [allBookings, setAllBookings] = useState<Booking[]>([]);
   const [invites] = useState<Invite[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     fetchBookings();
+    fetchJoinRequests();
+  }, [session]);
+
+  useEffect(() => {
+    combineBookings();
+  }, [bookings, joinRequests]);
+
+  // Removed refreshDashboard function as it's not used
+
+  // Add periodic refresh to check for updated data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (session?.user) {
+        fetchBookings();
+        fetchJoinRequests();
+      }
+    }, 60000); // Refresh every minute
+
+    return () => clearInterval(interval);
   }, [session]);
 
   const fetchBookings = async () => {
@@ -62,7 +109,7 @@ export default function UserDashboard() {
       const response = await fetch("/api/bookings");
       if (response.ok) {
         const data = await response.json();
-        setBookings(data);
+        setBookings(data.map((b: any) => ({ ...b, type: "venue" })));
       } else {
         console.error("Failed to fetch bookings");
       }
@@ -71,6 +118,54 @@ export default function UserDashboard() {
     } finally {
       setLoadingBookings(false);
     }
+  };
+
+  const fetchJoinRequests = async () => {
+    if (!session?.user) return;
+
+    try {
+      const response = await fetch("/api/user/join-requests");
+      if (response.ok) {
+        const data = await response.json();
+        setJoinRequests(data.joinRequests || []);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Failed to fetch join requests:", response.status, errorData);
+        // Set empty array on error so UI still works
+        setJoinRequests([]);
+      }
+    } catch (error) {
+      console.error("Error fetching join requests:", error);
+      // Set empty array on error so UI still works
+      setJoinRequests([]);
+    }
+  };
+
+  const combineBookings = () => {
+    // Convert accepted join requests to booking format for display
+    const gameBookings: Booking[] = joinRequests
+      .filter((request) => request.status === "ACCEPTED") // Only show accepted requests
+      .map((request) => ({
+        id: `game-${request.id}`,
+        date: request.invite.date,
+        startTime: request.invite.time,
+        endTime: `${parseInt(request.invite.time.split(":")[0]) + 2}:${
+          request.invite.time.split(":")[1]
+        }`, // Assume 2 hour duration
+        totalAmount: 0, // Game bookings don't have amount
+        status: "CONFIRMED" as const,
+        court: {
+          name: request.invite.sport,
+          venue: {
+            name: request.invite.venue,
+          },
+        },
+        type: "game" as const,
+      }));
+
+    // Combine venue bookings and game bookings
+    const combined = [...bookings, ...gameBookings];
+    setAllBookings(combined);
   };
 
   const getStatusBadgeVariant = (status: string) => {
@@ -141,13 +236,13 @@ export default function UserDashboard() {
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
                 </div>
-              ) : bookings.length === 0 ? (
+              ) : allBookings.length === 0 ? (
                 <p className="text-muted-foreground text-center py-4">
                   No bookings yet. Book your first court!
                 </p>
               ) : (
                 <div className="space-y-4">
-                  {bookings.slice(0, 3).map((booking) => (
+                  {allBookings.slice(0, 3).map((booking) => (
                     <div
                       key={booking.id}
                       className="flex items-center justify-between p-3 border rounded-lg"
@@ -176,7 +271,7 @@ export default function UserDashboard() {
                             {booking.startTime} - {booking.endTime}
                           </span>
                           <span className="font-medium text-green-600">
-                            ₹{booking.totalAmount}
+                            {booking.type === "game" ? "Free" : `₹${booking.totalAmount}`}
                           </span>
                         </div>
                       </div>
@@ -185,7 +280,7 @@ export default function UserDashboard() {
                       </Badge>
                     </div>
                   ))}
-                  {bookings.length > 3 && (
+                  {allBookings.length > 3 && (
                     <div className="text-center pt-2">
                       <Link href="/dashboard/bookings">
                         <Button variant="ghost" size="sm">
@@ -306,6 +401,31 @@ export default function UserDashboard() {
                     <span>Profile Settings</span>
                   </Button>
                 </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* My Game Invites Card - New Addition */}
+        <div className="mt-8">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardContent
+              className="p-6"
+              onClick={() => router.push("/dashboard/game-invites")}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <Users className="h-6 w-6 text-purple-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">My Game Invites</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Manage requests for your events
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="h-5 w-5 text-muted-foreground" />
               </div>
             </CardContent>
           </Card>

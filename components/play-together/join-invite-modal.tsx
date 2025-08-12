@@ -99,6 +99,11 @@ export function JoinInviteModal({
       form.reset();
       onOpenChange(false);
       onSuccess();
+      
+      // Refresh the page to update all booking data
+      if (typeof window !== 'undefined') {
+        window.location.reload();
+      }
     } catch (error: any) {
       console.error("Error joining invite:", error);
       const errorMessage =

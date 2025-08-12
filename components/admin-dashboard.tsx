@@ -47,16 +47,15 @@ import { motion } from "framer-motion";
 import {
   ArrowDownRight,
   ArrowUpRight,
+  Banknote,
   BarChart3,
   Building,
   Calendar,
   CheckCircle,
-  Banknote,
   Eye,
   LineChart,
   MapPin,
   Shield,
-  Star,
   TrendingUp,
   Users,
   UserX,
@@ -148,28 +147,12 @@ export default function AdminDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      // Mock data for demo
-      setStats({
-        totalUsers: 1250,
-        totalOwners: 85,
-        totalBookings: 3400,
-        totalVenues: 42,
-        totalCourts: 180,
-        pendingVenues: 7,
-        totalRevenue: 125000,
-        monthlyGrowth: 12.5,
-        chartData: {
-          bookingActivity: [],
-          userRegistrations: [],
-          topSports: [
-            { sport: "Tennis", bookings: 850 },
-            { sport: "Basketball", bookings: 720 },
-            { sport: "Football", bookings: 680 },
-            { sport: "Badminton", bookings: 420 },
-            { sport: "Swimming", bookings: 380 },
-          ],
-        },
-      });
+      const response = await fetch("/api/admin/stats");
+      if (!response.ok) {
+        throw new Error("Failed to fetch stats");
+      }
+      const data = await response.json();
+      setStats(data);
     } catch (error) {
       console.error("Failed to fetch admin stats:", error);
       toast.error("Failed to load dashboard data");
@@ -180,54 +163,34 @@ export default function AdminDashboard() {
 
   const fetchPendingVenues = async () => {
     try {
-      // Mock data for demo
-      setPendingVenues([
-        {
-          id: "1",
-          name: "Elite Sports Complex",
-          address: "123 Sports Ave",
-          city: "New York",
-          owner: { name: "John Smith", email: "john@elite.com" },
-          courts: [
-            { name: "Court A", sport: "Tennis" },
-            { name: "Court B", sport: "Basketball" },
-          ],
-          createdAt: new Date().toISOString(),
-          _count: { courts: 2 },
-        },
-      ]);
+      const response = await fetch("/api/admin/venues");
+      if (!response.ok) {
+        throw new Error("Failed to fetch pending venues");
+      }
+      const data = await response.json();
+      setPendingVenues(data);
     } catch (error) {
       console.error("Failed to fetch pending venues:", error);
+      toast.error("Failed to load pending venues");
     }
   };
 
   const fetchUsers = async () => {
     try {
-      // Mock data for demo
-      setUsers([
-        {
-          id: "1",
-          name: "Alice Johnson",
-          email: "alice@example.com",
-          role: "USER",
-          isVerified: true,
-          isBanned: false,
-          createdAt: new Date().toISOString(),
-          _count: { bookings: 12, venues: 0 },
-        },
-        {
-          id: "2",
-          name: "Bob Wilson",
-          email: "bob@venue.com",
-          role: "OWNER",
-          isVerified: true,
-          isBanned: false,
-          createdAt: new Date().toISOString(),
-          _count: { bookings: 0, venues: 3 },
-        },
-      ]);
+      const params = new URLSearchParams();
+      if (searchQuery) params.append("search", searchQuery);
+      if (roleFilter !== "all") params.append("role", roleFilter);
+      if (statusFilter !== "all") params.append("status", statusFilter);
+
+      const response = await fetch(`/api/admin/users?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch users");
+      }
+      const data = await response.json();
+      setUsers(data);
     } catch (error) {
       console.error("Failed to fetch users:", error);
+      toast.error("Failed to load users");
     }
   };
 
@@ -238,15 +201,26 @@ export default function AdminDashboard() {
   ) => {
     setIsActionLoading(true);
     try {
-      // Mock API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const response = await fetch(`/api/admin/venues/${venueId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action, comments }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update venue");
+      }
+
       toast.success(`Venue ${action}d successfully`);
       fetchPendingVenues();
       fetchDashboardData();
       setSelectedVenue(null);
       setActionComment("");
     } catch (error) {
-      toast.error("Something went wrong");
+      console.error("Venue action error:", error);
+      toast.error("Failed to update venue");
     } finally {
       setIsActionLoading(false);
     }
@@ -258,12 +232,96 @@ export default function AdminDashboard() {
     reason?: string
   ) => {
     try {
-      // Mock API call
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ action, reason }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update user");
+      }
+
       toast.success(`User ${action}ned successfully`);
       fetchUsers();
+      fetchDashboardData();
     } catch (error) {
-      toast.error("Something went wrong");
+      console.error("User action error:", error);
+      toast.error("Failed to update user");
+    }
+  };
+
+  const handleBanUser = async (userId: string, shouldBan: boolean) => {
+    try {
+      const response = await fetch("/api/admin/ban-user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId,
+          isBanned: shouldBan,
+        }),
+      });
+
+      if (response.ok) {
+        setUsers((prev) =>
+          prev.map((user) =>
+            user.id === userId ? { ...user, isBanned: shouldBan } : user
+          )
+        );
+        toast({
+          title: "Success",
+          description: `User ${shouldBan ? "banned" : "unbanned"} successfully`,
+        });
+      } else {
+        throw new Error("Failed to update user status");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update user status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleBanOwner = async (ownerId: string, shouldBan: boolean) => {
+    try {
+      const response = await fetch("/api/admin/ban-owner", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ownerId,
+          isBanned: shouldBan,
+        }),
+      });
+
+      if (response.ok) {
+        setUsers((prev) =>
+          prev.map((owner) =>
+            owner.id === ownerId ? { ...owner, isBanned: shouldBan } : owner
+          )
+        );
+        toast({
+          title: "Success",
+          description: `Owner ${
+            shouldBan ? "banned" : "unbanned"
+          } successfully`,
+        });
+      } else {
+        throw new Error("Failed to update owner status");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update owner status",
+        variant: "destructive",
+      });
     }
   };
 
@@ -680,7 +738,7 @@ export default function AdminDashboard() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Status</SelectItem>
-                      <SelectItem value="verified">Verified</SelectItem>
+                      <SelectItem value="active">Active</SelectItem>
                       <SelectItem value="banned">Banned</SelectItem>
                     </SelectContent>
                   </Select>
@@ -720,7 +778,8 @@ export default function AdminDashboard() {
                           </p>
                           <p className="text-xs text-muted-foreground">
                             {user._count.bookings} bookings •{" "}
-                            {user._count.venues} venues
+                            {user._count.venues} venues • Joined{" "}
+                            {new Date(user.createdAt).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -852,7 +911,9 @@ export default function AdminDashboard() {
                   <CardContent>
                     <div className="text-2xl font-bold">0.0</div>
                     <div className="flex items-center">
-                      <span className="text-xs text-muted-foreground">No ratings yet</span>
+                      <span className="text-xs text-muted-foreground">
+                        No ratings yet
+                      </span>
                     </div>
                   </CardContent>
                 </Card>

@@ -24,11 +24,36 @@ interface Booking {
     };
   };
   createdAt: string;
+  type: "venue" | "game";
+}
+
+interface JoinRequest {
+  id: string;
+  joinerName: string;
+  contactDetails: string;
+  playersCount: number;
+  status: "PENDING" | "ACCEPTED" | "REJECTED";
+  createdAt: string;
+  invite: {
+    id: string;
+    name: string;
+    venue: string;
+    sport: string;
+    date: string;
+    time: string;
+    playersRequired: number;
+    creator: {
+      name: string;
+      email: string;
+    };
+  };
 }
 
 export default function UserBookingsPage() {
   const { data: session } = useSession();
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
+  // Removed allBookings as it's not used - using filteredBookings instead
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
@@ -36,11 +61,23 @@ export default function UserBookingsPage() {
 
   useEffect(() => {
     fetchBookings();
+    fetchJoinRequests();
+  }, [session]);
+
+  // Add periodic refresh to check for updated join requests
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (session?.user) {
+        fetchJoinRequests();
+      }
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
   }, [session]);
 
   useEffect(() => {
-    filterBookings();
-  }, [bookings, statusFilter, searchQuery]);
+    combineAndFilterBookings();
+  }, [bookings, joinRequests, statusFilter, searchQuery]);
 
   const fetchBookings = async () => {
     if (!session?.user) return;
@@ -61,8 +98,61 @@ export default function UserBookingsPage() {
     }
   };
 
-  const filterBookings = () => {
-    let filtered = bookings;
+  const fetchJoinRequests = async () => {
+    if (!session?.user) return;
+
+    try {
+      const response = await fetch("/api/user/join-requests");
+      if (response.ok) {
+        const data = await response.json();
+        setJoinRequests(data.joinRequests || []);
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Failed to fetch join requests:", response.status, errorData);
+        // Set empty array on error so UI still works
+        setJoinRequests([]);
+      }
+    } catch (error) {
+      console.error("Error fetching join requests:", error);
+      // Set empty array on error so UI still works
+      setJoinRequests([]);
+    }
+  };
+
+  const combineAndFilterBookings = () => {
+    // Convert join requests to booking format for display
+    const gameBookings: Booking[] = joinRequests
+      .filter((request) => request.status === "ACCEPTED") // Only show accepted requests
+      .map((request) => ({
+        id: `game-${request.id}`,
+        date: request.invite.date,
+        startTime: request.invite.time,
+        endTime: `${parseInt(request.invite.time.split(":")[0]) + 2}:${
+          request.invite.time.split(":")[1]
+        }`, // Assume 2 hour duration
+        totalAmount: 0, // Game bookings don't have amount
+        status: "CONFIRMED" as const,
+        court: {
+          name: request.invite.sport,
+          venue: {
+            name: request.invite.venue,
+            address: request.invite.venue,
+            city: request.invite.venue,
+          },
+        },
+        createdAt: request.createdAt,
+        type: "game" as const,
+      }));
+
+    // Combine venue bookings and game bookings
+    const combined = [
+      ...bookings.map((b) => ({ ...b, type: "venue" as const })),
+      ...gameBookings,
+    ];
+    setAllBookings(combined);
+
+    // Apply filters
+    let filtered = combined;
 
     // Filter by status
     if (statusFilter !== "ALL") {
@@ -87,6 +177,8 @@ export default function UserBookingsPage() {
 
     setFilteredBookings(filtered);
   };
+
+  // Removed filterBookings as it's not used - using combineAndFilterBookings instead
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {
@@ -199,9 +291,16 @@ export default function UserBookingsPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
                         <div>
-                          <h3 className="font-semibold text-lg">
-                            {booking.court.name}
-                          </h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-lg">
+                              {booking.court.name}
+                            </h3>
+                            <Badge variant="outline" className="text-xs">
+                              {booking.type === "game"
+                                ? "Game Event"
+                                : "Venue Booking"}
+                            </Badge>
+                          </div>
                           <p className="text-muted-foreground">
                             {booking.court.venue.name}
                           </p>
@@ -234,11 +333,13 @@ export default function UserBookingsPage() {
 
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-muted-foreground">
-                          Booked on{" "}
+                          {booking.type === "game" ? "Joined on" : "Booked on"}{" "}
                           {new Date(booking.createdAt).toLocaleDateString()}
                         </span>
                         <span className="font-bold text-green-600 text-lg">
-                          ₹{booking.totalAmount}
+                          {booking.type === "game"
+                            ? "Free"
+                            : `₹${booking.totalAmount}`}
                         </span>
                       </div>
                     </div>

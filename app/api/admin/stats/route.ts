@@ -71,18 +71,47 @@ export async function GET() {
       }),
 
       // Top sports by booking count
-      prisma.court.groupBy({
-        by: ["sport"],
-        _count: {
-          bookings: true,
-        },
-        orderBy: {
+      prisma.booking
+        .groupBy({
+          by: ["courtId"],
           _count: {
-            bookings: "desc",
+            id: true,
           },
-        },
-        take: 5,
-      }),
+          orderBy: {
+            _count: {
+              id: "desc",
+            },
+          },
+          take: 10,
+        })
+        .then(async (bookingStats) => {
+          const courtIds = bookingStats.map((stat) => stat.courtId);
+          const courts = await prisma.court.findMany({
+            where: {
+              id: {
+                in: courtIds,
+              },
+            },
+            select: {
+              id: true,
+              sport: true,
+            },
+          });
+
+          const sportCounts: { [key: string]: number } = {};
+          bookingStats.forEach((stat) => {
+            const court = courts.find((c) => c.id === stat.courtId);
+            if (court) {
+              sportCounts[court.sport] =
+                (sportCounts[court.sport] || 0) + stat._count.id;
+            }
+          });
+
+          return Object.entries(sportCounts)
+            .map(([sport, count]) => ({ sport, _count: { id: count } }))
+            .sort((a, b) => b._count.id - a._count.id)
+            .slice(0, 5);
+        }),
     ]);
 
     // Calculate total revenue
@@ -115,7 +144,7 @@ export async function GET() {
         userRegistrations: registrationChartData,
         topSports: topSports.map((sport) => ({
           sport: sport.sport,
-          bookings: sport._count.bookings,
+          bookings: sport._count.id,
         })),
       },
     });

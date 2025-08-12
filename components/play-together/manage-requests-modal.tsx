@@ -85,6 +85,11 @@ export function ManageRequestsModal({
       toast.success("Request accepted successfully!");
       await fetchRequests();
       onSuccess();
+      
+      // Refresh parent page data
+      if (typeof window !== 'undefined') {
+        setTimeout(() => window.location.reload(), 1000);
+      }
     } catch (error: any) {
       console.error("Error accepting request:", error);
       const errorMessage =
@@ -102,6 +107,11 @@ export function ManageRequestsModal({
       toast.success("Request declined successfully!");
       await fetchRequests();
       onSuccess();
+      
+      // Refresh parent page data
+      if (typeof window !== 'undefined') {
+        setTimeout(() => window.location.reload(), 1000);
+      }
     } catch (error: any) {
       console.error("Error declining request:", error);
       const errorMessage =

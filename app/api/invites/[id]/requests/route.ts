@@ -8,7 +8,7 @@ export async function GET(
 ) {
   try {
     const session = await auth();
-    if (!session?.user?.id || (session.user as any)?.isBanned) {
+    if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -25,10 +25,12 @@ export async function GET(
     }
 
     if (invite.creatorId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      return NextResponse.json(
+        { error: "You can only view requests for your own invites" },
+        { status: 403 }
+      );
     }
 
-    // Get all join requests for this invite
     const requests = await prisma.joinRequest.findMany({
       where: { inviteId },
       include: {
@@ -42,7 +44,9 @@ export async function GET(
           },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: {
+        createdAt: "desc",
+      },
     });
 
     return NextResponse.json({ requests });

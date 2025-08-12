@@ -1,6 +1,17 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+const createInviteSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  venue: z.string().min(1, "Venue is required"),
+  sport: z.string().min(1, "Sport is required"),
+  date: z.string().min(1, "Date is required"),
+  time: z.string().min(1, "Time is required"),
+  playersRequired: z.number().min(1, "Players required must be at least 1"),
+  contactDetails: z.string().min(1, "Contact details are required"),
+});
 
 // Function to validate and normalize sport values
 function validateSport(sportValue: string): string {
@@ -29,29 +40,9 @@ function validateSport(sportValue: string): string {
   return foundSport || "Tennis";
 }
 
-export async function POST(request: NextRequest) {
+export async function GET() {
   try {
-    const session = await auth();
-    if (!session?.user?.id || (session.user as any)?.isBanned) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await request.json();
-
-    const invite = await prisma.invite.create({
-      data: {
-        name: body.name,
-        venue: body.venue,
-        date: new Date(body.date),
-        time: body.time,
-        sport: validateSport(body.sport),
-        playersRequired: body.playersRequired,
-        contactDetails: body.contactDetails,
-        creatorId: session.user.id,
-        playersJoined: 0,
-        playersLeft: body.playersRequired,
-        status: "OPEN",
-      },
+    const invites = await prisma.invite.findMany({
       include: {
         creator: {
           select: {
@@ -60,31 +51,9 @@ export async function POST(request: NextRequest) {
             email: true,
           },
         },
-      },
-    });
-
-    return NextResponse.json(invite);
-  } catch (error) {
-    console.error("Error creating invite:", error);
-    return NextResponse.json(
-      { error: "Failed to create invite" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function GET() {
-  try {
-    const invites = await prisma.invite.findMany({
-      where: {
-        status: "OPEN",
-      },
-      include: {
-        creator: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+        joinRequests: {
+          where: {
+            status: "ACCEPTED",
           },
         },
       },
@@ -93,11 +62,71 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(invites);
+    const invitesWithCounts = invites.map((invite: any) => {
+      const playersJoined = invite.joinRequests.reduce(
+        (sum: number, request: any) => sum + request.playersCount,
+        0
+      );
+      const playersLeft = invite.playersRequired - playersJoined;
+
+      return {
+        ...invite,
+        playersJoined,
+        playersLeft: Math.max(0, playersLeft),
+      };
+    });
+
+    return NextResponse.json(invitesWithCounts);
   } catch (error) {
     console.error("Error fetching invites:", error);
     return NextResponse.json(
-      { error: "Failed to fetch invites" },
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const validatedData = createInviteSchema.parse(body);
+
+    const invite = await prisma.invite.create({
+      data: {
+        ...validatedData,
+        date: new Date(validatedData.date),
+        creatorId: session.user.id,
+        playersLeft: validatedData.playersRequired,
+      },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(invite, { status: 201 });
+  } catch (error) {
+    console.error("Error creating invite:", error);
+
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid input data", details: error.errors },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
