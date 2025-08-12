@@ -9,6 +9,21 @@
 
 QuickCourt is a comprehensive sports venue booking platform that connects players with sports facilities. Built with modern web technologies, it provides seamless booking experiences for users, powerful management tools for venue owners, and robust administrative controls.
 
+<h3 style="color:red;">Login Credentials For Demo Purpose</h3>
+
+- **Admin** :
+    - id - lakshay22csu100@ncuindia.edu  
+    - password - Lakshay@123_
+
+- **Owner** :
+  - id - rishab22csu145@ncuindia.edu
+  - password - Rishab@123_
+ 
+- **User** :
+  - id - lakshaygoel911@gmail.com
+  - password - Lakshay@123_
+ 
+  
 ## 🏆 Supported Sports
 
 Our platform supports the following sports:
