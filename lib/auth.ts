@@ -28,7 +28,7 @@ const { auth, signIn, signOut, handlers } = (NextAuth as any)({
         }
 
         const isPasswordValid = await bcrypt.compare(
-          credentials.password as string, 
+          credentials.password as string,
           user.password || ""
         );
         if (!isPasswordValid) {
