@@ -17,9 +17,11 @@ const chatbotSchema = z.object({
           min: z.number().optional(),
           max: z.number().optional(),
         })
-        .optional(),
+        .optional()
+        .nullable(),
     })
-    .optional(),
+    .optional()
+    .nullable(),
 });
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
@@ -35,36 +37,30 @@ export async function POST(request: NextRequest) {
     const { message, context } = chatbotSchema.parse(body);
 
     // Initialize Gemini model
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
     // Extract booking intent and parameters from user message
     const intentPrompt = `
-You are a sports venue booking assistant. Analyze the user's message and extract booking-related information.
+Analyze this message and extract booking info: "${message}"
 
-User message: "${message}"
+Extract if present:
+- Sport: Tennis, Cricket, Football, Basketball, Volleyball, Badminton, Swimming, Pickleball, Table Tennis
+- Location/city
+- Date: today, tomorrow, weekend, specific dates
+- Time: morning, afternoon, evening, specific times
+- Price range
 
-Extract the following information if present:
-1. Sport type (tennis, football, basketball, cricket, badminton, volleyball, swimming, pickleball, table tennis)
-2. Location/city preference
-3. Date preference (today, tomorrow, specific date, this weekend, etc.)
-4. Time preference (morning, afternoon, evening, specific time)
-5. Duration preference
-6. Price range preference
-7. Group size/number of players
-
-Respond with a JSON object containing:
+Respond only with JSON:
 {
-  "intent": "booking_search" | "general_inquiry" | "help",
+  "intent": "booking_search" | "general_inquiry",
   "sport": "sport_name" or null,
   "location": "city_name" or null,
-  "datePreference": "parsed_date_info" or null,
+  "datePreference": "date_info" or null,
   "timePreference": "time_info" or null,
   "priceRange": {"min": number, "max": number} or null,
-  "groupSize": number or null,
-  "extractedQuery": "natural language summary of what user wants"
+  "extractedQuery": "what user wants",
+  "confidence": 0.8
 }
-
-Only respond with valid JSON, no other text.
 `;
 
     const intentResult = await model.generateContent(intentPrompt);
@@ -98,16 +94,18 @@ Only respond with valid JSON, no other text.
         extractedInfo: extractedIntent,
       });
     } else {
-      // Handle general inquiries
+      // Handle general inquiries with data context
+      const venueStats = await getVenueStats();
       const responsePrompt = `
-You are a helpful sports venue booking assistant. The user said: "${message}"
+User said: "${message}"
 
-Provide a helpful response about sports venue booking. Keep it conversational and under 150 words.
-If they're asking about how to book, sports available, or general questions, provide relevant information.
+Our platform data:
+- ${venueStats.totalVenues} venues available
+- Sports: ${venueStats.availableSports.join(", ")}
+- Cities: ${venueStats.cities.join(", ")}
+- Price range: ₹${venueStats.priceRange.min}-${venueStats.priceRange.max}/hour
 
-Available sports: Tennis, Football, Basketball, Cricket, Badminton, Volleyball, Swimming, Pickleball, Table Tennis.
-
-Be friendly and encourage them to search for specific venues or ask about booking requirements.
+Give a SHORT factual answer (max 25 words). Use the exact data above. No questions or recommendations.
 `;
 
       const generalResult = await model.generateContent(responsePrompt);
@@ -118,6 +116,7 @@ Be friendly and encourage them to search for specific venues or ask about bookin
         intent: extractedIntent.intent,
         venues: [],
         extractedInfo: extractedIntent,
+        stats: venueStats,
       });
     }
   } catch (error) {
@@ -178,6 +177,7 @@ async function searchVenuesForBooking(extractedIntent: any) {
           sport: true,
           pricePerHour: true,
           description: true,
+          operatingHours: true,
         },
       },
       owner: {
@@ -194,8 +194,9 @@ async function searchVenuesForBooking(extractedIntent: any) {
   });
 
   // Filter by price range if specified
+  let filteredVenues = venues;
   if (extractedIntent.priceRange) {
-    return venues.filter((venue) =>
+    filteredVenues = venues.filter((venue) =>
       venue.courts.some(
         (court) =>
           court.pricePerHour >= (extractedIntent.priceRange.min || 0) &&
@@ -204,7 +205,107 @@ async function searchVenuesForBooking(extractedIntent: any) {
     );
   }
 
-  return venues;
+  // Check availability for each venue if date preference is specified
+  const venuesWithAvailability = await Promise.all(
+    filteredVenues.map(async (venue) => {
+      const courtsWithAvailability = await Promise.all(
+        venue.courts.map(async (court) => {
+          const availableSlots = await checkCourtAvailability(
+            court.id,
+            extractedIntent.datePreference,
+            extractedIntent.timePreference
+          );
+          return {
+            ...court,
+            availableSlots: availableSlots.slice(0, 5), // Limit to 5 slots per court
+          };
+        })
+      );
+
+      return {
+        ...venue,
+        courts: courtsWithAvailability.filter(
+          (court) => court.availableSlots.length > 0
+        ),
+      };
+    })
+  );
+
+  // Only return venues that have available slots
+  return venuesWithAvailability.filter((venue) => venue.courts.length > 0);
+}
+
+async function checkCourtAvailability(
+  courtId: string,
+  datePreference?: string,
+  timePreference?: string
+) {
+  const today = new Date();
+  let targetDate = today;
+
+  // Parse date preference
+  if (datePreference) {
+    const lower = datePreference.toLowerCase();
+    if (lower.includes("today")) {
+      targetDate = today;
+    } else if (lower.includes("tomorrow")) {
+      targetDate = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+    } else if (lower.includes("weekend")) {
+      // Next Saturday
+      const daysUntilSaturday = (6 - today.getDay()) % 7 || 7;
+      targetDate = new Date(
+        today.getTime() + daysUntilSaturday * 24 * 60 * 60 * 1000
+      );
+    }
+  }
+
+  // Generate time slots for the target date
+  const timeSlots = [];
+  const startHour = 6; // 6 AM
+  const endHour = 22; // 10 PM
+
+  for (let hour = startHour; hour < endHour; hour++) {
+    const startTime = `${hour.toString().padStart(2, "0")}:00`;
+    const endTime = `${(hour + 1).toString().padStart(2, "0")}:00`;
+
+    // Check if slot is available
+    const existingBooking = await prisma.booking.findFirst({
+      where: {
+        courtId,
+        date: targetDate,
+        startTime,
+        status: "CONFIRMED",
+      },
+    });
+
+    const blockedSlot = await prisma.blockedSlot.findFirst({
+      where: {
+        courtId,
+        date: targetDate,
+        startTime,
+      },
+    });
+
+    if (!existingBooking && !blockedSlot) {
+      // Filter by time preference if specified
+      if (
+        !timePreference ||
+        (timePreference.toLowerCase().includes("morning") && hour < 12) ||
+        (timePreference.toLowerCase().includes("afternoon") &&
+          hour >= 12 &&
+          hour < 18) ||
+        (timePreference.toLowerCase().includes("evening") && hour >= 18)
+      ) {
+        timeSlots.push({
+          startTime,
+          endTime,
+          date: targetDate.toISOString().split("T")[0],
+        });
+      }
+    }
+  }
+
+  return timeSlots;
 }
 
 async function generateBookingResponse(
@@ -216,30 +317,14 @@ async function generateBookingResponse(
   const responsePrompt = `
 User asked: "${originalMessage}"
 
-I found ${venues.length} venues that match their criteria:
+Found ${venues.length} venues that match.
 
-${venues
-  .map(
-    (venue, index) => `
-${index + 1}. ${venue.name} in ${venue.city}
-   - Courts: ${venue.courts
-     .map((c: any) => `${c.name} (${c.sport}) - ₹${c.pricePerHour}/hr`)
-     .join(", ")}
-   - Rating: ${venue.rating}/5
-   - Address: ${venue.address}
-`
-  )
-  .join("\n")}
+Generate a SHORT response (max 30 words):
+1. State how many venues found
+2. Mention top venue name if any
+3. No questions or recommendations
 
-Generate a helpful response that:
-1. Acknowledges what they're looking for
-2. Summarizes the search results briefly
-3. Highlights the best options (top 2-3 venues)
-4. Mentions key details like sports available, price ranges, and locations
-5. Encourages them to click on venues to book or get more details
-6. Keep it conversational and under 200 words
-
-Format the response in a friendly, helpful tone as a booking assistant.
+Keep it factual and direct.
 `;
 
   try {
@@ -247,15 +332,71 @@ Format the response in a friendly, helpful tone as a booking assistant.
     return result.response.text();
   } catch (error) {
     console.error("Error generating response:", error);
-    return `I found ${venues.length} venues that match your search! ${
-      venues.length > 0
-        ? `The top results include ${venues
-            .slice(0, 2)
-            .map((v) => v.name)
-            .join(
-              " and "
-            )} with various courts available. Click on any venue to see more details and book your slot!`
-        : "Try adjusting your search criteria or location to find more options."
-    }`;
+    return `Found ${venues.length} venues${
+      venues.length > 0 ? `. Top option: ${venues[0].name}` : ""
+    }.`;
+  }
+}
+
+async function getVenueStats() {
+  try {
+    const [totalVenues, venues, sportsData] = await Promise.all([
+      prisma.venue.count({
+        where: {
+          isApproved: true,
+          isActive: true,
+        },
+      }),
+      prisma.venue.findMany({
+        where: {
+          isApproved: true,
+          isActive: true,
+        },
+        select: {
+          city: true,
+          courts: {
+            select: {
+              sport: true,
+              pricePerHour: true,
+            },
+          },
+        },
+      }),
+      prisma.court.findMany({
+        where: {
+          isActive: true,
+          venue: {
+            isApproved: true,
+            isActive: true,
+          },
+        },
+        select: {
+          sport: true,
+          pricePerHour: true,
+        },
+      }),
+    ]);
+
+    const cities = [...new Set(venues.map((v) => v.city))];
+    const sports = [...new Set(sportsData.map((c) => c.sport))];
+    const prices = sportsData.map((c) => c.pricePerHour);
+
+    return {
+      totalVenues,
+      cities,
+      availableSports: sports,
+      priceRange: {
+        min: Math.min(...prices) || 0,
+        max: Math.max(...prices) || 1000,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching venue stats:", error);
+    return {
+      totalVenues: 0,
+      cities: [],
+      availableSports: [],
+      priceRange: { min: 0, max: 1000 },
+    };
   }
 }

@@ -5,7 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { UserProfileCard } from "@/components/ui/user-profile-card";
-import { CalendarDays, Clock, MapPin, Plus, Search, Users } from "lucide-react";
+import {
+  Bot,
+  CalendarDays,
+  Clock,
+  MapPin,
+  Plus,
+  Search,
+  User,
+  Users,
+} from "lucide-react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -260,7 +269,7 @@ export default function UserDashboard() {
               <CardTitle>Quick Actions</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-4">
                 <Link href="/search" className="block">
                   <Button
                     variant="outline"
@@ -268,6 +277,15 @@ export default function UserDashboard() {
                   >
                     <Search className="h-6 w-6" />
                     <span>Book a Court</span>
+                  </Button>
+                </Link>
+                <Link href="/chatbot" className="block">
+                  <Button
+                    variant="outline"
+                    className="h-20 w-full flex-col gap-2 hover:bg-primary/10 hover:border-primary transition-all duration-200"
+                  >
+                    <Bot className="h-6 w-6" />
+                    <span>AI Assistant</span>
                   </Button>
                 </Link>
                 <Link href="/play-together" className="block">
@@ -279,13 +297,13 @@ export default function UserDashboard() {
                     <span>Find Players</span>
                   </Button>
                 </Link>
-                <Link href="/venues" className="block">
+                <Link href="/dashboard/profile" className="block">
                   <Button
                     variant="outline"
                     className="h-20 w-full flex-col gap-2 hover:bg-primary/10 hover:border-primary transition-all duration-200"
                   >
-                    <MapPin className="h-6 w-6" />
-                    <span>Find Venues</span>
+                    <User className="h-6 w-6" />
+                    <span>Profile Settings</span>
                   </Button>
                 </Link>
               </div>

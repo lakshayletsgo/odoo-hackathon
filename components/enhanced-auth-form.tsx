@@ -169,266 +169,264 @@ export default function EnhancedAuthForm({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background to-muted flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        <Card className="shadow-xl border-0 bg-background/50 backdrop-blur-sm">
-          <CardHeader className="space-y-1 text-center">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.2 }}
-              className="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center mx-auto mb-4"
-            >
-              <User className="h-6 w-6 text-primary-foreground" />
-            </motion.div>
-            <CardTitle className="text-2xl font-bold">{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
-          </CardHeader>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="w-full max-w-md"
+    >
+      <Card className="shadow-xl border-0 bg-background/95 backdrop-blur-sm">
+        <CardHeader className="space-y-1 text-center">
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-full flex items-center justify-center mx-auto mb-4"
+          >
+            <User className="h-6 w-6 text-primary-foreground" />
+          </motion.div>
+          <CardTitle className="text-2xl font-bold">{title}</CardTitle>
+          <CardDescription>{description}</CardDescription>
+        </CardHeader>
 
-          <CardContent className="space-y-6">
-            {mode === "signin" ? (
-              <Form {...signInForm}>
-                <form
-                  onSubmit={signInForm.handleSubmit(onSignIn)}
-                  className="space-y-4"
-                >
-                  <FormField
-                    control={signInForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                            <Input
-                              type="email"
-                              placeholder="Enter your email"
-                              className="pl-10"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+        <CardContent className="space-y-6">
+          {mode === "signin" ? (
+            <Form {...signInForm}>
+              <form
+                onSubmit={signInForm.handleSubmit(onSignIn)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={signInForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                          <Input
+                            type="email"
+                            placeholder="Enter your email"
+                            className="pl-10"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <FormField
-                    control={signInForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                            <Input
-                              type={showPassword ? "text" : "password"}
-                              placeholder="Enter your password"
-                              className="pl-10 pr-10"
-                              {...field}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <FormField
+                  control={signInForm.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter your password"
+                            className="pl-10 pr-10"
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <div className="flex items-center justify-between">
-                    <Link
-                      href="/auth/forgot-password"
-                      className="text-sm text-primary hover:text-primary/80 transition-colors"
-                    >
-                      Forgot password?
-                    </Link>
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isLoading}
-                    size="lg"
+                <div className="flex items-center justify-between">
+                  <Link
+                    href="/auth/forgot-password"
+                    className="text-sm text-primary hover:text-primary/80 transition-colors"
                   >
-                    {isLoading ? "Signing in..." : "Sign In"}
-                  </Button>
-                </form>
-              </Form>
-            ) : (
-              <Form {...signUpForm}>
-                <form
-                  onSubmit={signUpForm.handleSubmit(onSignUp)}
-                  className="space-y-4"
+                    Forgot password?
+                  </Link>
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading}
+                  size="lg"
                 >
-                  <FormField
-                    control={signUpForm.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                            <Input
-                              placeholder="Enter your full name"
-                              className="pl-10"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {isLoading ? "Signing in..." : "Sign In"}
+                </Button>
+              </form>
+            </Form>
+          ) : (
+            <Form {...signUpForm}>
+              <form
+                onSubmit={signUpForm.handleSubmit(onSignUp)}
+                className="space-y-4"
+              >
+                <FormField
+                  control={signUpForm.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Full Name</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                          <Input
+                            placeholder="Enter your full name"
+                            className="pl-10"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <FormField
-                    control={signUpForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                            <Input
-                              type="email"
-                              placeholder="Enter your email"
-                              className="pl-10"
-                              {...field}
-                            />
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <FormField
+                  control={signUpForm.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                          <Input
+                            type="email"
+                            placeholder="Enter your email"
+                            className="pl-10"
+                            {...field}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <FormField
-                    control={signUpForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Password</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                            <Input
-                              type={showPassword ? "text" : "password"}
-                              placeholder="Create a password"
-                              className="pl-10 pr-10"
-                              {...field}
-                            />
-                            <button
-                              type="button"
-                              onClick={() => setShowPassword(!showPassword)}
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                            >
-                              {showPassword ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <FormField
+                  control={signUpForm.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Create a password"
+                            className="pl-10 pr-10"
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <FormField
-                    control={signUpForm.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Confirm Password</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                            <Input
-                              type={showConfirmPassword ? "text" : "password"}
-                              placeholder="Confirm your password"
-                              className="pl-10 pr-10"
-                              {...field}
-                            />
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setShowConfirmPassword(!showConfirmPassword)
-                              }
-                              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                            >
-                              {showConfirmPassword ? (
-                                <EyeOff className="h-4 w-4" />
-                              ) : (
-                                <Eye className="h-4 w-4" />
-                              )}
-                            </button>
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                <FormField
+                  control={signUpForm.control}
+                  name="confirmPassword"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Confirm Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+                          <Input
+                            type={showConfirmPassword ? "text" : "password"}
+                            placeholder="Confirm your password"
+                            className="pl-10 pr-10"
+                            {...field}
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setShowConfirmPassword(!showConfirmPassword)
+                            }
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          >
+                            {showConfirmPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                  <Button
-                    type="submit"
-                    className="w-full"
-                    disabled={isLoading}
-                    size="lg"
-                  >
-                    {isLoading ? "Creating account..." : "Create Account"}
-                  </Button>
-                </form>
-              </Form>
-            )}
+                <Button
+                  type="submit"
+                  className="w-full"
+                  disabled={isLoading}
+                  size="lg"
+                >
+                  {isLoading ? "Creating account..." : "Create Account"}
+                </Button>
+              </form>
+            </Form>
+          )}
 
-            <Separator />
+          <Separator />
 
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">
+              {mode === "signin"
+                ? "Don't have an account? "
+                : "Already have an account? "}
+              <Link
+                href={mode === "signin" ? "/auth/signup" : "/auth/signin"}
+                className="font-medium text-primary hover:text-primary/80 transition-colors"
+              >
+                {mode === "signin" ? "Sign up" : "Sign in"}
+              </Link>
+            </p>
+          </div>
+
+          {mode === "signin" && (
             <div className="text-center">
-              <p className="text-sm text-muted-foreground">
-                {mode === "signin"
-                  ? "Don't have an account? "
-                  : "Already have an account? "}
-                <Link
-                  href={mode === "signin" ? "/auth/signup" : "/auth/signin"}
-                  className="font-medium text-primary hover:text-primary/80 transition-colors"
-                >
-                  {mode === "signin" ? "Sign up" : "Sign in"}
-                </Link>
-              </p>
+              <Link
+                href="/demo"
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Try Demo Account
+              </Link>
             </div>
-
-            {mode === "signin" && (
-              <div className="text-center">
-                <Link
-                  href="/demo"
-                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Try Demo Account
-                </Link>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </motion.div>
-    </div>
+          )}
+        </CardContent>
+      </Card>
+    </motion.div>
   );
 }

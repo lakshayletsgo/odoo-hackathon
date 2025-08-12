@@ -19,7 +19,7 @@ const sports = [
 const quickLinks = [
   { name: "Find Courts", href: "/search" },
   { name: "Find Players", href: "/play-together" },
-  { name: "Browse Venues", href: "/venues" },
+  { name: "Browse Venues", href: "/search" },
   { name: "How It Works", href: "/how-it-works" },
 ];
 

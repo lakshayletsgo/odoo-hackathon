@@ -1,5 +1,6 @@
 import { Footer } from "@/components/footer";
 import { Navigation } from "@/components/navigation";
+import { Chatbot } from "@/components/ui/chatbot";
 import { Toaster } from "@/components/ui/toaster";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -29,6 +30,7 @@ export default function RootLayout({
           <main className="min-h-screen">{children}</main>
           <Footer />
           <Toaster />
+          <Chatbot />
         </Providers>
       </body>
     </html>

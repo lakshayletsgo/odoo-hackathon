@@ -55,13 +55,13 @@ export function DashboardHeader() {
               <DropdownMenuItem asChild>
                 <Link href="/dashboard/profile">
                   <User className="mr-2 h-4 w-4" />
-                  Profile
+                  Profile Settings
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
-                <Link href="/dashboard/settings">
+                <Link href="/dashboard/bookings">
                   <Settings className="mr-2 h-4 w-4" />
-                  Settings
+                  My Bookings
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
