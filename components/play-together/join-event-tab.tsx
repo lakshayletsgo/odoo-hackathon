@@ -45,17 +45,35 @@ interface JoinEventTabProps {
   onManageRequests: (inviteId: string) => void;
 }
 
-// Use placeholder.svg as fallback since we don't have actual sport images
-const sportImages = {
-  SWIMMING: "/placeholder.svg",
-  TENNIS: "/placeholder.svg", 
-  CRICKET: "/placeholder.svg",
-  FOOTBALL: "/placeholder.svg",
-  VOLLEYBALL: "/placeholder.svg",
-  BASKETBALL: "/placeholder.svg",
-  PICKLEBALL: "/placeholder.svg",
-  BADMINTON: "/placeholder.svg",
-  TABLE_TENNIS: "/placeholder.svg",
+// Sport-specific images from assets folder with multiple mapping variations
+const sportImages: { [key: string]: string } = {
+  // Primary mappings
+  SWIMMING: "/assets/swimming.jpg",
+  TENNIS: "/assets/tennis.jpg", 
+  CRICKET: "/assets/cricket.jpg",
+  FOOTBALL: "/assets/football.jpg",
+  VOLLEYBALL: "/assets/volleyball.jpg",
+  BASKETBALL: "/assets/basketball.jpg",
+  PICKLEBALL: "/assets/pickleball.jpg",
+  BADMINTON: "/assets/badminton.jpg",
+  TABLE_TENNIS: "/assets/table-tennis.jpg",
+  
+  // Alternative mappings for common variations
+  "TABLE TENNIS": "/assets/table-tennis.jpg",
+  "PING PONG": "/assets/table-tennis.jpg",
+  TABLETENNIS: "/assets/table-tennis.jpg",
+  SOCCER: "/assets/football.jpg",
+  SWIM: "/assets/swimming.jpg",
+  
+  // Lowercase variations (just in case)
+  badminton: "/assets/badminton.jpg",
+  basketball: "/assets/basketball.jpg",
+  swimming: "/assets/swimming.jpg",
+  tennis: "/assets/tennis.jpg",
+  cricket: "/assets/cricket.jpg",
+  football: "/assets/football.jpg",
+  volleyball: "/assets/volleyball.jpg",
+  pickleball: "/assets/pickleball.jpg",
 };
 
 export function JoinEventTab({ onManageRequests }: JoinEventTabProps) {
@@ -107,10 +125,48 @@ export function JoinEventTab({ onManageRequests }: JoinEventTabProps) {
   }, []);
 
   const getSportImage = useCallback((sport: string) => {
-    return (
-      sportImages[sport as keyof typeof sportImages] ||
-      "/placeholder.svg"
-    );
+    if (!sport) return "/placeholder.svg";
+    
+    // Normalize the sport name - handle underscores, spaces, and case
+    const normalizedSport = sport
+      .toUpperCase()
+      .replace(/_/g, " ")  // Convert underscores to spaces
+      .trim();             // Remove extra whitespace
+    
+    // Debug logging to see what sport names we're getting
+    console.log("Original sport:", sport, "-> Normalized:", normalizedSport);
+    
+    // Try exact match first
+    if (sportImages[normalizedSport]) {
+      console.log("Found exact match for:", normalizedSport);
+      return sportImages[normalizedSport];
+    }
+    
+    // Try without spaces (for cases like "TABLE_TENNIS" vs "TABLETENNIS")
+    const noSpaceSport = normalizedSport.replace(/\s+/g, "");
+    if (sportImages[noSpaceSport]) {
+      console.log("Found no-space match for:", noSpaceSport);
+      return sportImages[noSpaceSport];
+    }
+    
+    // Try with underscores instead of spaces
+    const underscoreSport = normalizedSport.replace(/\s+/g, "_");
+    if (sportImages[underscoreSport]) {
+      console.log("Found underscore match for:", underscoreSport);
+      return sportImages[underscoreSport];
+    }
+    
+    // Try the original sport name as-is (in case it's already properly formatted)
+    if (sportImages[sport]) {
+      console.log("Found original match for:", sport);
+      return sportImages[sport];
+    }
+    
+    // Log when we fall back to placeholder
+    console.log("No match found for sport:", sport, "using placeholder");
+    
+    // Fallback to placeholder
+    return "/placeholder.svg";
   }, []);
 
   if (loading) {
