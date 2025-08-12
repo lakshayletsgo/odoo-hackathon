@@ -20,8 +20,11 @@ QuickCourt is a comprehensive sports venue booking platform that connects player
  > ⚠️ **Note:** Please use a **work email** for demo purposes.  
 > We are using **Postmark**, which accepts only work email addresses.
 
+## Live Project Link 
+[[Vercel Link](https://odoo-hackathon-virid.vercel.app/)]
+
 ## Demo Video Link
-[[Drive Link](https://drive.google.com/file/d/16xM60ndqM27H9W_2ENklxU-IJLgYCV_c/view?usp=sharing)]
+[[Drive Link](https://drive.google.com/file/d/1v4kTcUdPldwbeYeN-fsfsTArVgoQNR57/view?usp=sharing)]
 
 
 ## 🏆 Supported Sports
@@ -40,7 +43,7 @@ Our platform supports the following sports:
 
 ## 🏆 Key Features
 
-### 🎯 **Play Together Feature** (Latest Addition)
+### 🎯 **Play Together Feature** 
 
 An innovative social feature that allows players to create and join sports activities:
 
@@ -175,7 +178,7 @@ Visit [http://localhost:3000](http://localhost:3000) to see the application.
 
 ## 📊 Database Schema
 
-The application uses a comprehensive SQLite database with the following main entities:
+The application uses a comprehensive PostgreSQL database with the following main entities:
 
 - **Users**: Multi-role user system (USER, OWNER, ADMIN)
 - **Venues**: Sports facilities with location and amenities
@@ -183,20 +186,6 @@ The application uses a comprehensive SQLite database with the following main ent
 - **Bookings**: Reservation system with payment tracking
 - **Invites**: Play Together feature for social sports activities
 - **Requests**: Join requests for sports activities
-
-## 🎮 Demo Features
-
-Access the demo at `/demo` with pre-configured accounts:
-
-- **Player**: `demo.player@quickcourt.com` / `demo123`
-- **Owner**: `demo.owner@quickcourt.com` / `demo123`
-- **Admin**: `demo.admin@quickcourt.com` / `demo123`
-
-Demo actions include:
-
-- Sample booking creation
-- Test data generation
-- Notification testing
 
 ## 🧪 API Endpoints
 
