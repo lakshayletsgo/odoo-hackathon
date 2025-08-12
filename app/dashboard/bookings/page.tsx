@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { CalendarDays, Clock, MapPin, Search } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface Booking {
   id: string;
@@ -54,32 +54,12 @@ export default function UserBookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
   // Removed allBookings as it's not used - using filteredBookings instead
-  const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
+  // Removed filteredBookings state - now using useMemo computed value
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    fetchBookings();
-    fetchJoinRequests();
-  }, [session]);
-
-  // Add periodic refresh to check for updated join requests
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (session?.user) {
-        fetchJoinRequests();
-      }
-    }, 30000); // Refresh every 30 seconds
-
-    return () => clearInterval(interval);
-  }, [session]);
-
-  useEffect(() => {
-    combineAndFilterBookings();
-  }, [bookings, joinRequests, statusFilter, searchQuery]);
-
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     if (!session?.user) return;
 
     try {
@@ -96,9 +76,9 @@ export default function UserBookingsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user]);
 
-  const fetchJoinRequests = async () => {
+  const fetchJoinRequests = useCallback(async () => {
     if (!session?.user) return;
 
     try {
@@ -117,9 +97,27 @@ export default function UserBookingsPage() {
       // Set empty array on error so UI still works
       setJoinRequests([]);
     }
-  };
+  }, [session?.user]);
 
-  const combineAndFilterBookings = () => {
+  useEffect(() => {
+    fetchBookings();
+    fetchJoinRequests();
+  }, [fetchBookings, fetchJoinRequests]);
+
+  // Add periodic refresh to check for updated join requests
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (session?.user) {
+        fetchJoinRequests();
+      }
+    }, 30000); // Refresh every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [session?.user, fetchJoinRequests]);
+
+  // Removed duplicate functions - using the useCallback versions above
+
+  const filteredBookings = useMemo(() => {
     // Convert join requests to booking format for display
     const gameBookings: Booking[] = joinRequests
       .filter((request) => request.status === "ACCEPTED") // Only show accepted requests
@@ -149,7 +147,6 @@ export default function UserBookingsPage() {
       ...bookings.map((b) => ({ ...b, type: "venue" as const })),
       ...gameBookings,
     ];
-    setAllBookings(combined);
 
     // Apply filters
     let filtered = combined;
@@ -175,8 +172,8 @@ export default function UserBookingsPage() {
       );
     }
 
-    setFilteredBookings(filtered);
-  };
+    return filtered;
+  }, [bookings, joinRequests, statusFilter, searchQuery]);
 
   // Removed filterBookings as it's not used - using combineAndFilterBookings instead
 

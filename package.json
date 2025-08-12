@@ -4,17 +4,18 @@
   "private": true,
   "scripts": {
     "build": "next build",
-    "build-with-migrate": "prisma migrate deploy && next build",
     "dev": "next dev --turbo",
     "lint": "next lint",
     "start": "next start",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:migrate:deploy": "prisma migrate deploy",
-    "prisma:migrate:baseline": "node scripts/baseline-migrations.js",
     "prisma:push": "prisma db push",
+    "prisma:reset": "prisma migrate reset --force --skip-seed",
+    "prisma:deploy": "prisma db push --accept-data-loss",
     "prisma:studio": "prisma studio",
-    "vercel-build": "npm run prisma:migrate:baseline && next build"
+    "vercel-build": "prisma generate && next build",
+    "postinstall": "prisma generate"
   },
   "packageManager": "npm",
   "engines": {
@@ -36,7 +37,6 @@
   "bugs": {},
   "homepage": "",
   "main": "index.js",
-  "postinstall": "prisma generate",
   "dependencies": {
     "@auth/core": "^0.40.0",
     "@auth/prisma-adapter": "^2.10.0",

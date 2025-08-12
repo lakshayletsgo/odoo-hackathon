@@ -19,7 +19,7 @@ import {
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 interface Booking {
   id: string;
@@ -73,35 +73,12 @@ export default function UserDashboard() {
   const { data: session } = useSession();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [joinRequests, setJoinRequests] = useState<JoinRequest[]>([]);
-  const [allBookings, setAllBookings] = useState<Booking[]>([]);
+  // Removed allBookings state - now using useMemo computed value
   const [invites] = useState<Invite[]>([]);
   const [loadingBookings, setLoadingBookings] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchBookings();
-    fetchJoinRequests();
-  }, [session]);
-
-  useEffect(() => {
-    combineBookings();
-  }, [bookings, joinRequests]);
-
-  // Removed refreshDashboard function as it's not used
-
-  // Add periodic refresh to check for updated data
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (session?.user) {
-        fetchBookings();
-        fetchJoinRequests();
-      }
-    }, 60000); // Refresh every minute
-
-    return () => clearInterval(interval);
-  }, [session]);
-
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     if (!session?.user) return;
 
     try {
@@ -118,9 +95,9 @@ export default function UserDashboard() {
     } finally {
       setLoadingBookings(false);
     }
-  };
+  }, [session?.user]);
 
-  const fetchJoinRequests = async () => {
+  const fetchJoinRequests = useCallback(async () => {
     if (!session?.user) return;
 
     try {
@@ -139,9 +116,9 @@ export default function UserDashboard() {
       // Set empty array on error so UI still works
       setJoinRequests([]);
     }
-  };
+  }, [session?.user]);
 
-  const combineBookings = () => {
+  const allBookings = useMemo(() => {
     // Convert accepted join requests to booking format for display
     const gameBookings: Booking[] = joinRequests
       .filter((request) => request.status === "ACCEPTED") // Only show accepted requests
@@ -164,9 +141,25 @@ export default function UserDashboard() {
       }));
 
     // Combine venue bookings and game bookings
-    const combined = [...bookings, ...gameBookings];
-    setAllBookings(combined);
-  };
+    return [...bookings, ...gameBookings];
+  }, [bookings, joinRequests]);
+
+  useEffect(() => {
+    fetchBookings();
+    fetchJoinRequests();
+  }, [fetchBookings, fetchJoinRequests]);
+
+  // Add periodic refresh to check for updated data
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (session?.user) {
+        fetchBookings();
+        fetchJoinRequests();
+      }
+    }, 60000); // Refresh every minute
+
+    return () => clearInterval(interval);
+  }, [session?.user, fetchBookings, fetchJoinRequests]);
 
   const getStatusBadgeVariant = (status: string) => {
     switch (status) {

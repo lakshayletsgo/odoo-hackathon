@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 interface Invite {
@@ -45,16 +45,17 @@ interface JoinEventTabProps {
   onManageRequests: (inviteId: string) => void;
 }
 
+// Use placeholder.svg as fallback since we don't have actual sport images
 const sportImages = {
-  SWIMMING: "/images/sports/swimming.jpg",
-  TENNIS: "/images/sports/tennis.jpg",
-  CRICKET: "/images/sports/cricket.jpg",
-  FOOTBALL: "/images/sports/football.jpg",
-  VOLLEYBALL: "/images/sports/volleyball.jpg",
-  BASKETBALL: "/images/sports/basketball.jpg",
-  PICKLEBALL: "/images/sports/pickleball.jpg",
-  BADMINTON: "/images/sports/badminton.jpg",
-  TABLE_TENNIS: "/images/sports/table-tennis.jpg",
+  SWIMMING: "/placeholder.svg",
+  TENNIS: "/placeholder.svg", 
+  CRICKET: "/placeholder.svg",
+  FOOTBALL: "/placeholder.svg",
+  VOLLEYBALL: "/placeholder.svg",
+  BASKETBALL: "/placeholder.svg",
+  PICKLEBALL: "/placeholder.svg",
+  BADMINTON: "/placeholder.svg",
+  TABLE_TENNIS: "/placeholder.svg",
 };
 
 export function JoinEventTab({ onManageRequests }: JoinEventTabProps) {
@@ -64,7 +65,7 @@ export function JoinEventTab({ onManageRequests }: JoinEventTabProps) {
   const [selectedInvite, setSelectedInvite] = useState<Invite | null>(null);
   const [showJoinModal, setShowJoinModal] = useState(false);
 
-  const fetchInvites = async () => {
+  const fetchInvites = useCallback(async () => {
     try {
       const response = await axios.get("/api/invites");
       setInvites(response.data);
@@ -74,48 +75,43 @@ export function JoinEventTab({ onManageRequests }: JoinEventTabProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchInvites();
-  }, []);
+  }, [fetchInvites]);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       weekday: "short",
       year: "numeric",
       month: "short",
       day: "numeric",
     });
-  };
+  }, []);
 
-  const formatTime = (timeString: string) => {
+  const formatTime = useCallback((timeString: string) => {
     const [hours, minutes] = timeString.split(":");
     const hour = parseInt(hours, 10);
     const ampm = hour >= 12 ? "PM" : "AM";
     const displayHour = hour % 12 || 12;
     return `${displayHour}:${minutes} ${ampm}`;
-  };
+  }, []);
 
-  const formatSport = (sport: string) => {
+  const formatSport = useCallback((sport: string) => {
     return sport
       .replace(/_/g, " ")
       .split(" ")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(" ");
-  };
+  }, []);
 
-  const getSportImage = (sport: string) => {
+  const getSportImage = useCallback((sport: string) => {
     return (
       sportImages[sport as keyof typeof sportImages] ||
-      "/images/sports/default.jpg"
+      "/placeholder.svg"
     );
-  };
-
-  // Update the image source to use a placeholder or handle missing images
-  const getEventImage = (sport: string) => {
-    return `/api/images/sports/default`;
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -180,7 +176,7 @@ export function JoinEventTab({ onManageRequests }: JoinEventTabProps) {
                   className="object-cover"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = "/images/sports/default.jpg";
+                    target.src = "/placeholder.svg";
                   }}
                 />
                 <div className="absolute top-2 right-2">

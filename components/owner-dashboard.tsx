@@ -5,14 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import {
+  Building2,
   CalendarDays,
   CheckCircle,
   Clock,
   MapPin,
+  Plus,
+  Settings,
   XCircle,
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface OwnerBooking {
@@ -35,20 +40,40 @@ interface OwnerBooking {
   };
 }
 
+interface Venue {
+  id: string;
+  name: string;
+  description?: string;
+  address: string;
+  city: string;
+  state: string;
+  isApproved: boolean;
+  isActive: boolean;
+  rating: number;
+  totalRating: number;
+  createdAt: string;
+  totalBookings?: number;
+  totalRevenue?: number;
+  activeCourts?: number;
+  _count: {
+    courts: number;
+  };
+}
+
 export default function OwnerDashboard() {
   const { data: session } = useSession();
+  const router = useRouter();
   const [pendingBookings, setPendingBookings] = useState<OwnerBooking[]>([]);
   const [recentBookings, setRecentBookings] = useState<OwnerBooking[]>([]);
+  const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
+  const [venuesLoading, setVenuesLoading] = useState(true);
   const [processingBookings, setProcessingBookings] = useState<Set<string>>(
     new Set()
   );
 
-  useEffect(() => {
-    fetchBookings();
-  }, [session]);
-
-  const fetchBookings = async () => {
+  // Convert to useCallback for stable references
+  const fetchBookings = useCallback(async () => {
     if (!session?.user) return;
 
     try {
@@ -66,7 +91,49 @@ export default function OwnerDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user]);
+
+  const fetchVenues = useCallback(async () => {
+    if (!session?.user) return;
+
+    try {
+      setVenuesLoading(true);
+      const response = await fetch("/api/owner/venues");
+      if (response.ok) {
+        const data = await response.json();
+        // API returns array directly, not wrapped in { venues: [] }
+        setVenues(Array.isArray(data) ? data : []);
+      } else {
+        console.error("Failed to fetch venues", response.status);
+        const errorData = await response.text();
+        console.error("Error details:", errorData);
+      }
+    } catch (error) {
+      console.error("Error fetching venues:", error);
+    } finally {
+      setVenuesLoading(false);
+    }
+  }, [session?.user]);
+
+  useEffect(() => {
+    fetchBookings();
+    fetchVenues();
+  }, [fetchBookings, fetchVenues]);
+
+  // Add visibility change listener to refresh data when user returns to tab
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden && session?.user) {
+        fetchVenues();
+        fetchBookings();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [session?.user, fetchVenues, fetchBookings]);
+
+  // Removed duplicate function definitions - using useCallback versions above
 
   const handleBookingAction = async (
     bookingId: string,
@@ -146,6 +213,143 @@ export default function OwnerDashboard() {
                   </p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Actions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid gap-4 md:grid-cols-2">
+                <Link href="/owner/venues/new">
+                  <Button className="h-20 w-full flex-col gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+                    <Plus className="h-6 w-6" />
+                    <span>Create New Venue</span>
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  className="h-20 w-full flex-col gap-2 hover:bg-primary/10 hover:border-primary transition-all duration-200"
+                  onClick={() => {
+                    // Scroll to venues section
+                    document.getElementById('venues-section')?.scrollIntoView({ 
+                      behavior: 'smooth' 
+                    });
+                  }}
+                >
+                  <Building2 className="h-6 w-6" />
+                  <span>View My Venues</span>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Venues Section */}
+        <div id="venues-section" className="mb-8">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                My Venues ({venues.length})
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {venuesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : venues.length === 0 ? (
+                <div className="text-center py-8">
+                  <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    No venues yet
+                  </h3>
+                  <p className="text-muted-foreground mb-4">
+                    Start by creating your first venue to begin accepting bookings
+                  </p>
+                  <Link href="/owner/venues/new">
+                    <Button>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Your First Venue
+                    </Button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {venues.map((venue) => (
+                    <div
+                      key={venue.id}
+                      className="p-4 border rounded-lg space-y-3 hover:shadow-md transition-shadow"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium">{venue.name}</h3>
+                        <div className="flex gap-2">
+                          {venue.isApproved ? (
+                            <Badge variant="default">Approved</Badge>
+                          ) : (
+                            <Badge variant="secondary">Pending Approval</Badge>
+                          )}
+                          {venue.isActive && (
+                            <Badge variant="outline">Active</Badge>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-3 w-3" />
+                          <span>{venue.address}, {venue.city}, {venue.state}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-3 w-3" />
+                          <span>{venue._count.courts} courts</span>
+                          {venue.activeCourts !== undefined && venue.activeCourts !== venue._count.courts && (
+                            <span className="text-muted-foreground">({venue.activeCourts} active)</span>
+                          )}
+                        </div>
+                        {venue.rating > 0 && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-yellow-500">★</span>
+                            <span>{venue.rating.toFixed(1)} ({venue.totalRating} reviews)</span>
+                          </div>
+                        )}
+                        {venue.totalBookings !== undefined && venue.totalBookings > 0 && (
+                          <div className="flex items-center gap-2">
+                            <CalendarDays className="h-3 w-3" />
+                            <span>{venue.totalBookings} bookings</span>
+                            {venue.totalRevenue !== undefined && (
+                              <span className="text-green-600 font-medium">₹{venue.totalRevenue}</span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {venue.description && (
+                        <p className="text-sm text-muted-foreground line-clamp-2">
+                          {venue.description}
+                        </p>
+                      )}
+
+                      <div className="flex gap-2 pt-2">
+                        <Link href={`/owner/venues/${venue.id}/edit`} className="flex-1">
+                          <Button variant="outline" size="sm" className="w-full">
+                            <Settings className="h-3 w-3 mr-1" />
+                            Edit
+                          </Button>
+                        </Link>
+                        <Button variant="outline" size="sm" className="flex-1">
+                          View Details
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
