@@ -11,9 +11,10 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev --name init",
     "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:migrate:baseline": "node scripts/baseline-migrations.js",
     "prisma:push": "prisma db push",
     "prisma:studio": "prisma studio",
-    "vercel-build": "prisma migrate deploy && next build"
+    "vercel-build": "npm run prisma:migrate:baseline && next build"
   },
   "packageManager": "npm",
   "engines": {
